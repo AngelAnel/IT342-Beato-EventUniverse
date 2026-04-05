@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cream"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Logo header — clickable, goes back to Login -->
+        <LinearLayout
+            android:id="@+id/llLogoHeader"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_marginBottom="24dp">
+
+            <ImageView
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:src="@drawable/logonobg"
+                android:scaleType="fitCenter" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginStart="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="EVENT"
+                    android:textColor="@color/dark_maroon"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="UNIVERSE"
+                    android:textColor="@color/dark_maroon"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Page title -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CREATE AN ACCOUNT"
+            android:textColor="@color/dark_maroon"
+            android:textSize="26sp"
+            android:textStyle="bold"
+            android:letterSpacing="0.05"
+            android:layout_marginBottom="20dp" />
+
+        <!-- Tab buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="14dp">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnTabParticipant"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:text="Participant"
+                android:textSize="14sp"
+                android:textColor="@color/dark_maroon"
+                android:background="@drawable/tab_active_background"
+                android:stateListAnimator="@null"
+                android:layout_marginEnd="8dp" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnTabOrganizer"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:text="Organizer"
+                android:textSize="14sp"
+                android:textColor="@color/dark_maroon"
+                android:background="@drawable/tab_inactive_background"
+                android:stateListAnimator="@null"
+                android:layout_marginStart="8dp" />
+
+        </LinearLayout>
+
+        <!-- Card holding the form -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/dark_maroon"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <!-- Form title -->
+                <TextView
+                    android:id="@+id/tvFormTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Register as Participant"
+                    android:textColor="@color/cream"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:layout_marginBottom="20dp" />
+
+                <!-- Participant fields -->
+                <LinearLayout
+                    android:id="@+id/layoutParticipant"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="visible">
+
+                    <TextView style="@style/FieldLabel" android:text="First Name" />
+                    <EditText
+                        android:id="@+id/etFirstName"
+                        style="@style/FieldInput"
+                        android:inputType="textPersonName" />
+
+                    <TextView style="@style/FieldLabel" android:text="Last Name" />
+                    <EditText
+                        android:id="@+id/etLastName"
+                        style="@style/FieldInput"
+                        android:inputType="textPersonName" />
+
+                    <TextView style="@style/FieldLabel" android:text="Institutional Email" />
+                    <EditText
+                        android:id="@+id/etEmailParticipant"
+                        style="@style/FieldInput"
+                        android:inputType="textEmailAddress" />
+
+                    <TextView style="@style/FieldLabel" android:text="Password" />
+                    <EditText
+                        android:id="@+id/etPasswordParticipant"
+                        style="@style/FieldInput"
+                        android:inputType="textPassword" />
+
+                    <TextView style="@style/FieldLabel" android:text="Confirm Password" />
+                    <EditText
+                        android:id="@+id/etConfirmPasswordParticipant"
+                        style="@style/FieldInput"
+                        android:inputType="textPassword" />
+
+                    <TextView style="@style/FieldLabel" android:text="Choose Department" />
+                    <Spinner
+                        android:id="@+id/spinnerDeptParticipant"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="@drawable/input_background"
+                        android:paddingStart="12dp"
+                        android:layout_marginBottom="16dp" />
+
+                </LinearLayout>
+
+                <!-- Organizer fields -->
+                <LinearLayout
+                    android:id="@+id/layoutOrganizer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView style="@style/FieldLabel" android:text="Organizational Name" />
+                    <EditText
+                        android:id="@+id/etOrgName"
+                        style="@style/FieldInput"
+                        android:inputType="textPersonName" />
+
+                    <TextView style="@style/FieldLabel" android:text="Institutional Email" />
+                    <EditText
+                        android:id="@+id/etEmailOrganizer"
+                        style="@style/FieldInput"
+                        android:inputType="textEmailAddress" />
+
+                    <TextView style="@style/FieldLabel" android:text="Password" />
+                    <EditText
+                        android:id="@+id/etPasswordOrganizer"
+                        style="@style/FieldInput"
+                        android:inputType="textPassword" />
+
+                    <TextView style="@style/FieldLabel" android:text="Confirm Password" />
+                    <EditText
+                        android:id="@+id/etConfirmPasswordOrganizer"
+                        style="@style/FieldInput"
+                        android:inputType="textPassword" />
+
+                    <TextView style="@style/FieldLabel" android:text="Choose Department" />
+                    <Spinner
+                        android:id="@+id/spinnerDeptOrganizer"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:background="@drawable/input_background"
+                        android:paddingStart="12dp"
+                        android:layout_marginBottom="16dp" />
+
+                </LinearLayout>
+
+                <!-- Error -->
+                <TextView
+                    android:id="@+id/tvRegisterError"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#FFCCCC"
+                    android:textSize="13sp"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Register button -->
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnRegister"
+                    android:layout_width="160dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/button_background"
+                    android:text="register"
+                    android:textColor="@color/cream"
+                    android:textSize="16sp"
+                    android:fontFamily="serif"
+                    android:stateListAnimator="@null"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="8dp" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Bottom spacing so register button isn't flush at bottom -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="32dp" />
+
+    </LinearLayout>
+</ScrollView>

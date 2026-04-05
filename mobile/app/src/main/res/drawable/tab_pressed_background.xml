@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- No glow, flat — simulates pressed/sunk -->
+    <item>
+        <shape>
+            <solid android:color="#F5F0E8" />
+            <corners android:radius="8dp" />
+            <stroke android:color="#6B1A1A" android:width="2.5dp" />
+        </shape>
+    </item>
+</layer-list>
