@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { registerUser } from '../api/auth';
 import logo from '../assets/logo-nobg.png';
 
@@ -12,39 +12,78 @@ const DEPARTMENTS = [
   'College of Criminal Justice',
 ];
 
-const ROLES = ['Participant', 'Organization'];
-
 export default function Register() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    firstName: '', lastName: '', email: '',
-    password: '', confirmPassword: '', department: '', role: '',
-  });
+  const [activeTab, setActiveTab] = useState('Participant');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const [participantForm, setParticipantForm] = useState({
+    firstName: '', lastName: '', email: '',
+    password: '', confirmPassword: '', department: '',
+  });
+
+  const [organizerForm, setOrganizerForm] = useState({
+    firstName: '', email: '',
+    password: '', confirmPassword: '', department: '',
+  });
+
+  const handleParticipantChange = (e) => {
+    setParticipantForm({ ...participantForm, [e.target.name]: e.target.value });
+    setError('');
+  };
+
+  const handleOrganizerChange = (e) => {
+    setOrganizerForm({ ...organizerForm, [e.target.name]: e.target.value });
     setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
 
-    // Validate all fields
-    const { firstName, lastName, email, password, confirmPassword, department, role } = form;
-    if (!firstName || !lastName || !email || !password || !confirmPassword || !department || !role) {
-      setError('All fields are required. Please fill in every field.');
-      return;
-    }
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.');
-      return;
+    let payload = {};
+
+    if (activeTab === 'Participant') {
+      const { firstName, lastName, email, password, confirmPassword, department } = participantForm;
+      if (!firstName || !lastName || !email || !password || !confirmPassword || !department) {
+        setError('All fields are required.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('Passwords do not match.');
+        return;
+      }
+      if (password.length < 8) {
+        setError('Password must be at least 8 characters.');
+        return;
+      }
+      payload = { firstName, lastName, email, password, confirmPassword, department, role: 'Participant' };
+    } else {
+      const { firstName, email, password, confirmPassword, department } = organizerForm;
+      if (!firstName || !email || !password || !confirmPassword || !department) {
+        setError('All fields are required.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        setError('Passwords do not match.');
+        return;
+      }
+      if (password.length < 8) {
+        setError('Password must be at least 8 characters.');
+        return;
+      }
+      payload = {
+        firstName,
+        lastName: firstName,
+        email, password, confirmPassword, department,
+        role: 'Organization'
+      };
     }
 
     setLoading(true);
     try {
-      const res = await registerUser(form);
+      const res = await registerUser(payload);
       if (res.data.success) {
         navigate('/login');
       } else {
@@ -59,61 +98,179 @@ export default function Register() {
 
   return (
     <div style={styles.page}>
-      {/* Logo */}
-      <div style={styles.logoWrap} onClick={() => navigate('/login')} role="button">
+
+      {}
+      <div style={styles.logoWrap} onClick={() => {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (token && user) {
+              navigate(user.role === 'Participant' ? '/dashboard/participant' : '/dashboard/organizer');
+            } else {
+              navigate('/login');
+            }
+          }} role="button">
         <img src={logo} alt="Logo" style={styles.logo} />
       </div>
 
-      {/* Card */}
-      <div style={styles.card}>
-        <h2 style={styles.cardTitle}>Register</h2>
+      {}
+      <div style={styles.container}>
 
-        <form onSubmit={handleSubmit} style={styles.form}>
-          {/* Row: First + Last */}
-          <div style={styles.row}>
-            <div style={styles.half}>
-              <label style={styles.label}>First Name</label>
-              <input name="firstName" value={form.firstName} onChange={handleChange} style={styles.input} />
-            </div>
-            <div style={styles.half}>
-              <label style={styles.label}>Last Name</label>
-              <input name="lastName" value={form.lastName} onChange={handleChange} style={styles.input} />
-            </div>
-          </div>
+        {}
+        <h1 style={styles.pageTitle}>CREATE AN ACCOUNT</h1>
 
-          <label style={styles.label}>Institutional Email</label>
-          <input name="email" type="email" value={form.email} onChange={handleChange} style={styles.input} />
-
-          {/* Row: Password + Confirm */}
-          <div style={styles.row}>
-            <div style={styles.half}>
-              <label style={styles.label}>Password</label>
-              <input name="password" type="password" value={form.password} onChange={handleChange} style={styles.input} />
-            </div>
-            <div style={styles.half}>
-              <label style={styles.label}>Confirm Password</label>
-              <input name="confirmPassword" type="password" value={form.confirmPassword} onChange={handleChange} style={styles.input} />
-            </div>
-          </div>
-
-          <label style={styles.label}>Department</label>
-          <select name="department" value={form.department} onChange={handleChange} style={styles.select}>
-            <option value="">Choose Department</option>
-            {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
-
-          <label style={styles.label}>Role</label>
-          <select name="role" value={form.role} onChange={handleChange} style={{ ...styles.select, width: '50%' }}>
-            <option value="">Choose Role</option>
-            {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
-          </select>
-
-          {error && <p style={styles.error}>{error}</p>}
-
-          <button type="submit" style={styles.btn} disabled={loading}>
-            {loading ? 'registering...' : 'register'}
+        {/* Tab buttons ABOVE the card */}
+        <div style={styles.tabRow}>
+          <button
+            style={{ ...styles.tabBtn, ...(activeTab === 'Participant' ? styles.tabBtnActive : styles.tabBtnInactive) }}
+            onClick={() => { setActiveTab('Participant'); setError(''); }}>
+            Participant
           </button>
-        </form>
+          <button
+            style={{ ...styles.tabBtn, ...(activeTab === 'Organizer' ? styles.tabBtnActive : styles.tabBtnInactive) }}
+            onClick={() => { setActiveTab('Organizer'); setError(''); }}>
+            Organizer
+          </button>
+        </div>
+
+        {/* Card */}
+        <div style={styles.card}>
+
+          {/* Form title inside card */}
+          <h2 style={styles.cardTitle}>
+            {activeTab === 'Participant' ? 'Register as Participant' : 'Register as Organizer'}
+          </h2>
+
+          <form onSubmit={handleSubmit} style={styles.form}>
+
+            {/* ── PARTICIPANT FORM ── */}
+            {activeTab === 'Participant' && (
+              <>
+                <div style={styles.row}>
+                  <div style={styles.half}>
+                    <label style={styles.label}>First Name</label>
+                    <input
+                      name="firstName"
+                      value={participantForm.firstName}
+                      onChange={handleParticipantChange}
+                      style={styles.input} />
+                  </div>
+                  <div style={styles.half}>
+                    <label style={styles.label}>Last Name</label>
+                    <input
+                      name="lastName"
+                      value={participantForm.lastName}
+                      onChange={handleParticipantChange}
+                      style={styles.input} />
+                  </div>
+                </div>
+
+                <label style={styles.label}>Institutional Email</label>
+                <input
+                  name="email"
+                  type="email"
+                  value={participantForm.email}
+                  onChange={handleParticipantChange}
+                  style={styles.input} />
+
+                <div style={styles.row}>
+                  <div style={styles.half}>
+                    <label style={styles.label}>Password</label>
+                    <input
+                      name="password"
+                      type="password"
+                      value={participantForm.password}
+                      onChange={handleParticipantChange}
+                      style={styles.input} />
+                  </div>
+                  <div style={styles.half}>
+                    <label style={styles.label}>Confirm Password</label>
+                    <input
+                      name="confirmPassword"
+                      type="password"
+                      value={participantForm.confirmPassword}
+                      onChange={handleParticipantChange}
+                      style={styles.input} />
+                  </div>
+                </div>
+
+                <label style={styles.label}>Choose Department</label>
+                <select
+                  name="department"
+                  value={participantForm.department}
+                  onChange={handleParticipantChange}
+                  style={styles.select}>
+                  <option value="">Choose Department</option>
+                  {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </>
+            )}
+
+            {/* ── ORGANIZER FORM ── */}
+            {activeTab === 'Organizer' && (
+              <>
+                <label style={styles.label}>Organizational Name</label>
+                <input
+                  name="firstName"
+                  value={organizerForm.firstName}
+                  onChange={handleOrganizerChange}
+                  style={styles.input} />
+
+                <label style={styles.label}>Institutional Email</label>
+                <input
+                  name="email"
+                  type="email"
+                  value={organizerForm.email}
+                  onChange={handleOrganizerChange}
+                  style={styles.input} />
+
+                <div style={styles.row}>
+                  <div style={styles.half}>
+                    <label style={styles.label}>Password</label>
+                    <input
+                      name="password"
+                      type="password"
+                      value={organizerForm.password}
+                      onChange={handleOrganizerChange}
+                      style={styles.input} />
+                  </div>
+                  <div style={styles.half}>
+                    <label style={styles.label}>Confirm Password</label>
+                    <input
+                      name="confirmPassword"
+                      type="password"
+                      value={organizerForm.confirmPassword}
+                      onChange={handleOrganizerChange}
+                      style={styles.input} />
+                  </div>
+                </div>
+
+                <label style={styles.label}>Choose Department</label>
+                <select
+                  name="department"
+                  value={organizerForm.department}
+                  onChange={handleOrganizerChange}
+                  style={styles.select}>
+                  <option value="">Choose Department</option>
+                  {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </>
+            )}
+
+            {error && <p style={styles.error}>{error}</p>}
+
+            <button type="submit" style={styles.btn} disabled={loading}>
+              {loading ? 'registering...' : 'register'}
+            </button>
+
+          </form>
+        </div>
+
+        {/* Login link below card */}
+        <p style={styles.loginLink}>
+          Already have an account?{' '}
+          <Link to="/login" style={styles.link}>Login here</Link>
+        </p>
+
       </div>
     </div>
   );
@@ -121,11 +278,11 @@ export default function Register() {
 
 const styles = {
   page: {
+    minHeight: '100vh',
+    backgroundColor: '#f5f0e8',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: '100vh',
-    backgroundColor: '#f5f0e8',
     position: 'relative',
     padding: '40px 20px',
   },
@@ -140,16 +297,57 @@ const styles = {
     height: '52px',
     objectFit: 'contain',
   },
-  card: {
-    backgroundColor: '#6b1a1a',
-    borderRadius: '16px',
-    padding: '40px 48px',
+  container: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
     width: '680px',
     maxWidth: '95vw',
   },
+  pageTitle: {
+    fontSize: '32px',
+    fontWeight: 'bold',
+    color: '#6b1a1a',
+    fontFamily: 'Georgia, serif',
+    letterSpacing: '2px',
+    marginBottom: '20px',
+  },
+  tabRow: {
+    display: 'flex',
+    gap: '12px',
+    marginBottom: '0px',
+  },
+  tabBtn: {
+    padding: '10px 28px',
+    borderRadius: '20px',
+    fontSize: '15px',
+    fontFamily: 'Georgia, serif',
+    cursor: 'pointer',
+    border: '2px solid #6b1a1a',
+    fontWeight: 'bold',
+    transition: 'all 0.2s',
+    marginBottom: '24px',
+  },
+
+  tabBtnActive: {
+    backgroundColor: '#6b1a1a',
+    color: '#f5f0e8',
+    boxShadow: '0 4px 0 #3d0f0f',
+    transform: 'translateY(-2px)',
+  },
+  tabBtnInactive: {
+    backgroundColor: '#f5f0e8',
+    color: '#6b1a1a',
+  },
+  card: {
+    backgroundColor: '#6b1a1a',
+    borderRadius: '0 16px 16px 16px',
+    padding: '36px 48px',
+    width: '100%',
+  },
   cardTitle: {
     color: '#f5f0e8',
-    fontSize: '36px',
+    fontSize: '22px',
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: '24px',
@@ -172,8 +370,8 @@ const styles = {
   label: {
     color: '#f5f0e8',
     fontWeight: 'bold',
-    fontSize: '15px',
-    marginTop: '12px',
+    fontSize: '14px',
+    marginTop: '10px',
     marginBottom: '4px',
   },
   input: {
@@ -184,6 +382,7 @@ const styles = {
     fontSize: '15px',
     outline: 'none',
     width: '100%',
+    boxSizing: 'border-box',
   },
   select: {
     backgroundColor: '#f5f0e8',
@@ -195,6 +394,7 @@ const styles = {
     width: '100%',
     cursor: 'pointer',
     appearance: 'auto',
+    boxSizing: 'border-box',
   },
   error: {
     color: '#ffcccc',
@@ -214,5 +414,16 @@ const styles = {
     width: '40%',
     alignSelf: 'center',
     fontFamily: 'Georgia, serif',
+  },
+  loginLink: {
+    marginTop: '16px',
+    fontSize: '13px',
+    color: '#8b6b4a',
+    alignSelf: 'center',
+  },
+  link: {
+    color: '#6b1a1a',
+    textDecoration: 'underline',
+    fontWeight: 'bold',
   },
 };
