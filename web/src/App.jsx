@@ -4,6 +4,7 @@ import Register from './pages/Register';
 import ParticipantDashboard from './pages/ParticipantDashboard';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import AddEventPage from './pages/AddEventPage';
+import OAuth2Callback from './pages/OAuth2Callback';
 
 function ProtectedRoute({ children, allowedRole }) {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -34,7 +35,7 @@ export default function App() {
             <OrganizerDashboard />
           </ProtectedRoute>
         } />
-
+        <Route path="/oauth2/callback" element={<OAuth2Callback />} />
         <Route path="/organizer/add-event" element={
           <ProtectedRoute allowedRole="Organization">
             <AddEventPage />
