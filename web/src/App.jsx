@@ -7,12 +7,9 @@ import RegisterOrganizer from './pages/RegisterOrganizer';
 import ParticipantDashboard from './pages/ParticipantDashboard';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import AddEventPage from './pages/AddEventPage';
-<<<<<<< Updated upstream
-=======
 import OAuth2Callback from './pages/OAuth2Callback';
 import ParticipantProfile from './pages/ParticipantProfile';
 import OrganizerProfile from './pages/OrganizerProfile';
->>>>>>> Stashed changes
 
 function ProtectedRoute({ children, allowedRole }) {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -45,9 +42,6 @@ export default function App() {
             <OrganizerDashboard />
           </ProtectedRoute>
         } />
-<<<<<<< Updated upstream
-
-=======
         <Route path="/profile/participant" element={
           <ProtectedRoute allowedRole="Participant">
             <ParticipantProfile />
@@ -59,13 +53,11 @@ export default function App() {
           </ProtectedRoute>
         } />
         <Route path="/oauth2/callback" element={<OAuth2Callback />} />
->>>>>>> Stashed changes
         <Route path="/organizer/add-event" element={
           <ProtectedRoute allowedRole="Organization">
             <AddEventPage />
           </ProtectedRoute>
         } />
-        {/* Keep old routes temporarily so nothing breaks */}
         <Route path="/login" element={<Navigate to="/" />} />
         <Route path="/register" element={<Navigate to="/" />} />
       </Routes>
