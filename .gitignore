@@ -1,0 +1,56 @@
+# =============================================
+# ANDROID STUDIO - Kotlin/Android (mobile/)
+# =============================================
+mobile/.gradle/
+mobile/local.properties
+mobile/.idea/
+mobile/build/
+mobile/captures/
+mobile/.externalNativeBuild/
+mobile/.cxx/
+mobile/**/*.apk
+mobile/**/*.aab
+mobile/**/*.ap_
+mobile/**/*.dex
+mobile/**/*.class
+mobile/**/bin/
+mobile/**/gen/
+mobile/**/out/
+mobile/**/*.iml
+
+# =============================================
+# INTELLIJ IDEA - Spring Boot Backend (backend/)
+# =============================================
+backend/.idea/
+backend/target/
+backend/**/*.iml
+backend/**/*.iws
+backend/**/*.ipr
+backend/**/*.log
+backend/.mvn/timing.properties
+backend/.mvn/wrapper/maven-wrapper.jar
+
+# =============================================
+# VS CODE - React/Vite Frontend (web/)
+# =============================================
+web/node_modules/
+web/dist/
+web/dist-ssr/
+web/.env
+web/.env.local
+web/.env.development.local
+web/.env.test.local
+web/.env.production.local
+web/npm-debug.log*
+web/yarn-debug.log*
+web/yarn-error.log*
+web/*.local
+
+# =============================================
+# GENERAL / OS
+# =============================================
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*.swp
