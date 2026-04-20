@@ -63,7 +63,12 @@ export default function Navbar({ onSearch }) {
             <path d="M13.73 21a2 2 0 0 1-3.46 0" />
           </svg>
         </button>
-        <span style={styles.userName}>{displayName}</span>
+        <span
+              style={styles.userName}
+              onClick={() => navigate(user?.role === 'Participant' ? '/profile/participant' : '/profile/organizer')}
+            >
+              {displayName}
+            </span>
       </div>
     </header>
   );

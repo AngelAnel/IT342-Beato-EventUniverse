@@ -1,14 +1,23 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login';
-import Register from './pages/Register';
+import LandingPage from './pages/LandingPage';
+import LoginParticipant from './pages/LoginParticipant';
+import LoginOrganizer from './pages/LoginOrganizer';
+import RegisterParticipant from './pages/RegisterParticipant';
+import RegisterOrganizer from './pages/RegisterOrganizer';
 import ParticipantDashboard from './pages/ParticipantDashboard';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import AddEventPage from './pages/AddEventPage';
+<<<<<<< Updated upstream
+=======
+import OAuth2Callback from './pages/OAuth2Callback';
+import ParticipantProfile from './pages/ParticipantProfile';
+import OrganizerProfile from './pages/OrganizerProfile';
+>>>>>>> Stashed changes
 
 function ProtectedRoute({ children, allowedRole }) {
   const user = JSON.parse(localStorage.getItem('user'));
   const token = localStorage.getItem('token');
-  if (!token || !user) return <Navigate to="/login" />;
+  if (!token || !user) return <Navigate to="/" />;
   if (allowedRole && user.role !== allowedRole) {
     return user.role === 'Participant'
       ? <Navigate to="/dashboard/participant" />
@@ -21,9 +30,11 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate to="/login" />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login/participant" element={<LoginParticipant />} />
+        <Route path="/login/organizer" element={<LoginOrganizer />} />
+        <Route path="/register/participant" element={<RegisterParticipant />} />
+        <Route path="/register/organizer" element={<RegisterOrganizer />} />
         <Route path="/dashboard/participant" element={
           <ProtectedRoute allowedRole="Participant">
             <ParticipantDashboard />
@@ -34,12 +45,29 @@ export default function App() {
             <OrganizerDashboard />
           </ProtectedRoute>
         } />
+<<<<<<< Updated upstream
 
+=======
+        <Route path="/profile/participant" element={
+          <ProtectedRoute allowedRole="Participant">
+            <ParticipantProfile />
+          </ProtectedRoute>
+        } />
+        <Route path="/profile/organizer" element={
+          <ProtectedRoute allowedRole="Organization">
+            <OrganizerProfile />
+          </ProtectedRoute>
+        } />
+        <Route path="/oauth2/callback" element={<OAuth2Callback />} />
+>>>>>>> Stashed changes
         <Route path="/organizer/add-event" element={
           <ProtectedRoute allowedRole="Organization">
             <AddEventPage />
           </ProtectedRoute>
         } />
+        {/* Keep old routes temporarily so nothing breaks */}
+        <Route path="/login" element={<Navigate to="/" />} />
+        <Route path="/register" element={<Navigate to="/" />} />
       </Routes>
     </BrowserRouter>
   );
