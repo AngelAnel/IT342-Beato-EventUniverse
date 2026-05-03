@@ -6,6 +6,8 @@ export default function Navbar({ onSearch }) {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user'));
   const [query, setQuery] = useState('');
+  const [showPanel, setShowPanel] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const displayName = user?.role === 'Organization'
     ? user?.firstName
@@ -29,48 +31,105 @@ export default function Navbar({ onSearch }) {
         navigate('/dashboard/organizer');
       }
     } else {
-      navigate('/login');
+      navigate('/');
     }
   };
 
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate('/');
+  };
+
   return (
-    <header style={styles.header}>
-      <div style={styles.logoWrap} onClick={handleLogoClick}>
-        <img src={logoWhite} alt="Event Universe" style={styles.logo} />
-      </div>
+    <>
+      <header style={styles.header}>
+        <div style={styles.logoWrap} onClick={handleLogoClick}>
+          <img src={logoWhite} alt="Event Universe" style={styles.logo} />
+        </div>
 
-      <div style={styles.searchWrap}>
-        <input
-          type="text"
-          placeholder="Search event..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          style={styles.searchInput}
-        />
-        <button onClick={handleSearch} style={styles.searchBtn}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b1a1a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-        </button>
-      </div>
+        <div style={styles.searchWrap}>
+          <input
+            type="text"
+            placeholder="Search event..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+            style={styles.searchInput}
+          />
+          <button onClick={handleSearch} style={styles.searchBtn}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b1a1a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </button>
+        </div>
 
-      <div style={styles.rightWrap}>
-        <button style={styles.bellBtn} title="Notifications">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f5f0e8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-          </svg>
-        </button>
-        <span
+        <div style={styles.rightWrap}>
+          <button style={styles.bellBtn} title="Notifications">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f5f0e8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+          </button>
+
+          {/* Name button — toggles panel */}
+          <div style={styles.nameWrap}>
+            <span
               style={styles.userName}
-              onClick={() => navigate(user?.role === 'Participant' ? '/profile/participant' : '/profile/organizer')}
+              onClick={() => setShowPanel(!showPanel)}
             >
               {displayName}
             </span>
-      </div>
-    </header>
+
+            {/* Dropdown panel */}
+            {showPanel && (
+              <div style={styles.dropdownPanel}>
+                <div style={styles.dropdownArrow} />
+                <button
+                  style={styles.panelBtn}
+                  onClick={() => {
+                    setShowPanel(false);
+                    navigate(user?.role === 'Participant' ? '/profile/participant' : '/profile/organizer');
+                  }}
+                >
+                  Profile
+                </button>
+                <button
+                  style={styles.panelBtnLogout}
+                  onClick={() => {
+                    setShowPanel(false);
+                    setShowLogoutConfirm(true);
+                  }}
+                >
+                  Logout
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* Logout confirmation modal */}
+      {showLogoutConfirm && (
+        <div style={styles.overlay}>
+          <div style={styles.modal}>
+            <h2 style={styles.modalTitle}>You are about to log out</h2>
+            <button
+              style={styles.modalBtnLogout}
+              onClick={handleLogout}
+            >
+              Logout
+            </button>
+            <button
+              style={styles.modalBtnCancel}
+              onClick={() => setShowLogoutConfirm(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -114,7 +173,11 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
   },
-  rightWrap: { display: 'flex', alignItems: 'center', gap: '12px' },
+  rightWrap: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
   bellBtn: {
     background: 'none',
     border: 'none',
@@ -123,11 +186,120 @@ const styles = {
     alignItems: 'center',
     padding: '4px',
   },
+  nameWrap: {
+    position: 'relative',
+  },
   userName: {
     color: '#f5f0e8',
     fontSize: '15px',
     fontFamily: 'Georgia, serif',
     cursor: 'pointer',
     textDecoration: 'underline',
+  },
+  dropdownPanel: {
+  position: 'absolute',
+  top: '48px',
+  right: 0,
+  backgroundColor: '#fff',
+  border: '2px solid #6b1a1a',
+  borderRadius: '12px',
+  boxShadow: '0 8px 24px rgba(107, 26, 26, 0.25)',
+  zIndex: 200,
+  minWidth: '200px',
+  display: 'flex',
+  flexDirection: 'column',
+  overflow: 'hidden',
+  padding: '12px',
+  gap: '10px',
+},
+  dropdownArrow: {
+    position: 'absolute',
+    top: '-8px',
+    right: '16px',
+    width: 0,
+    height: 0,
+    borderLeft: '8px solid transparent',
+    borderRight: '8px solid transparent',
+    borderBottom: '8px solid #fff',
+  },
+  panelBtn: {
+  backgroundColor: '#6b1a1a',
+  color: '#f5f0e8',
+  border: 'none',
+  borderRadius: '8px',
+  padding: '14px 20px',
+  fontSize: '16px',
+  fontFamily: 'Georgia, serif',
+  cursor: 'pointer',
+  textAlign: 'center',
+  fontWeight: 'bold',
+},
+panelBtnLogout: {
+  backgroundColor: '#6b1a1a',
+  color: '#f5f0e8',
+  border: 'none',
+  borderRadius: '8px',
+  padding: '14px 20px',
+  fontSize: '16px',
+  fontFamily: 'Georgia, serif',
+  cursor: 'pointer',
+  textAlign: 'center',
+  fontWeight: 'bold',
+},
+  // Blurred overlay
+  overlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backdropFilter: 'blur(4px)',
+    zIndex: 999,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modal: {
+    backgroundColor: '#6b1a1a',
+    borderRadius: '16px',
+    padding: '48px 64px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '20px',
+    minWidth: '400px',
+  },
+  modalTitle: {
+    color: '#f5f0e8',
+    fontSize: '24px',
+    fontWeight: 'bold',
+    fontFamily: 'Georgia, serif',
+    margin: 0,
+    textAlign: 'center',
+  },
+  modalBtnLogout: {
+    backgroundColor: '#f5f0e8',
+    color: '#6b1a1a',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '14px',
+    fontSize: '18px',
+    fontWeight: 'bold',
+    fontFamily: 'Georgia, serif',
+    cursor: 'pointer',
+    width: '100%',
+  },
+  modalBtnCancel: {
+    backgroundColor: '#f5f0e8',
+    color: '#6b1a1a',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '14px',
+    fontSize: '18px',
+    fontWeight: 'bold',
+    fontFamily: 'Georgia, serif',
+    cursor: 'pointer',
+    width: '100%',
   },
 };

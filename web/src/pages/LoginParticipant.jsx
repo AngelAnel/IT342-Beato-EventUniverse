@@ -7,17 +7,20 @@ export default function LoginParticipant() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
+  const [googleError, setGoogleError] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError('');
+    setGoogleError(false);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setGoogleError(false);
     try {
       const res = await loginUser(form);
       if (res.data.success) {
@@ -31,7 +34,11 @@ export default function LoginParticipant() {
         }
         navigate('/dashboard/participant');
       } else {
-        setError(res.data.message);
+        if (res.data.message === 'GOOGLE_USER') {
+          setGoogleError(true);
+        } else {
+          setError(res.data.message);
+        }
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password');
@@ -47,26 +54,30 @@ export default function LoginParticipant() {
   return (
     <div style={styles.page}>
 
-      {/* Logo top left */}
       <div style={styles.logoWrap}>
         <img src={logo} alt="Logo" style={styles.logo} />
       </div>
 
-      {/* Left branding */}
       <div style={styles.branding}>
         <h1 style={styles.brandTitle}>EVENT<br />UNIVERSE</h1>
         <p style={styles.brandSub}>A wildcat experience</p>
       </div>
 
-      {/* Right side */}
       <div style={styles.rightSide}>
 
-        {/* Back button */}
         <button style={styles.backBtn} onClick={() => navigate('/')}>&#8249;</button>
 
-        {/* Login card */}
         <div style={styles.card}>
           <h2 style={styles.cardTitle}>Login</h2>
+
+          {/* Google user error box */}
+          {googleError && (
+            <div style={styles.googleErrorBox}>
+              <p style={styles.googleErrorText}>
+                This account was registered using Google. Please use the Google button below to sign in.
+              </p>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} style={styles.form}>
             <label style={styles.label}>Email</label>
@@ -94,12 +105,10 @@ export default function LoginParticipant() {
             </button>
           </form>
 
-          {/* Divider */}
           <div style={styles.dividerRow}>
             <div style={styles.dividerLine} />
           </div>
 
-          {/* Google login */}
           <div style={styles.googleRow}>
             <span style={styles.loginWithText}>Login with:</span>
             <button onClick={handleGoogleLogin} style={styles.googleBtn} title="Login with Google">
@@ -114,7 +123,6 @@ export default function LoginParticipant() {
           </div>
         </div>
 
-        {/* Register link */}
         <p style={styles.registerLink}>
           Still don't have an account?{' '}
           <Link to="/register/participant" style={styles.link}>Register here</Link>
@@ -136,19 +144,9 @@ const styles = {
     padding: '20px',
     gap: '80px',
   },
-  logoWrap: {
-    position: 'absolute',
-    top: '20px',
-    left: '24px',
-  },
-  logo: {
-    width: '52px',
-    height: '52px',
-    objectFit: 'contain',
-  },
-  branding: {
-    textAlign: 'center',
-  },
+  logoWrap: { position: 'absolute', top: '20px', left: '24px' },
+  logo: { width: '52px', height: '52px', objectFit: 'contain' },
+  branding: { textAlign: 'center' },
   brandTitle: {
     fontSize: '72px',
     fontWeight: '900',
@@ -185,7 +183,6 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontFamily: 'Georgia, serif',
   },
   card: {
     backgroundColor: '#6b1a1a',
@@ -200,14 +197,25 @@ const styles = {
     fontSize: '36px',
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: '28px',
+    marginBottom: '16px',
     fontFamily: 'Georgia, serif',
   },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
+  googleErrorBox: {
+    backgroundColor: '#f5f0e8',
+    borderRadius: '10px',
+    padding: '12px 16px',
+    marginBottom: '16px',
+    border: '2px solid #a82020',
   },
+  googleErrorText: {
+    color: '#6b1a1a',
+    fontSize: '13px',
+    fontFamily: 'Georgia, serif',
+    margin: 0,
+    textAlign: 'center',
+    lineHeight: '1.5',
+  },
+  form: { display: 'flex', flexDirection: 'column', gap: '6px' },
   label: {
     color: '#f5f0e8',
     fontWeight: 'bold',
