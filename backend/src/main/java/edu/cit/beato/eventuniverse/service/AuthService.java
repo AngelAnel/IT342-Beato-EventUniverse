@@ -58,7 +58,20 @@ public class AuthService {
 
         User user = userRepository.findByEmail(request.getEmail()).orElse(null);
 
-        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        if (user == null) {
+            response.put("success", false);
+            response.put("message", "Invalid email or password");
+            return response;
+        }
+
+        // Check if this is a Google OAuth user
+        if ("GOOGLE_OAUTH_USER".equals(user.getPassword())) {
+            response.put("success", false);
+            response.put("message", "GOOGLE_USER");
+            return response;
+        }
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             response.put("success", false);
             response.put("message", "Invalid email or password");
             return response;

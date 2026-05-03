@@ -37,8 +37,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest request) {
         Map<String, Object> result = authService.login(request);
-        int status = (boolean) result.get("success") ? 200 : 401;
-        return ResponseEntity.status(status).body(result);
+        return ResponseEntity.status(200).body(result);
     }
 
     @GetMapping("/me")
@@ -63,6 +62,62 @@ public class AuthController {
             }
 
             response.put("success", true);
+            response.put("data", Map.of(
+                    "id", user.getId(),
+                    "email", user.getEmail(),
+                    "firstName", user.getFirstName(),
+                    "lastName", user.getLastName(),
+                    "role", user.getRole(),
+                    "department", user.getDepartment()
+            ));
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Something went wrong");
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    @PutMapping("/profile")
+    public ResponseEntity<Map<String, Object>> updateProfile(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody Map<String, String> updates) {
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            String token = authHeader.replace("Bearer ", "");
+
+            if (!jwtUtil.isTokenValid(token)) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
+
+            String email = jwtUtil.extractEmail(token);
+            User user = userRepository.findByEmail(email).orElse(null);
+
+            if (user == null) {
+                response.put("success", false);
+                response.put("message", "User not found");
+                return ResponseEntity.status(404).body(response);
+            }
+
+            if (updates.containsKey("firstName") && !updates.get("firstName").isBlank()) {
+                user.setFirstName(updates.get("firstName"));
+            }
+            if (updates.containsKey("lastName") && !updates.get("lastName").isBlank()) {
+                user.setLastName(updates.get("lastName"));
+            }
+            if (updates.containsKey("department") && !updates.get("department").isBlank()) {
+                user.setDepartment(updates.get("department"));
+            }
+
+            userRepository.save(user);
+
+            response.put("success", true);
+            response.put("message", "Profile updated successfully");
             response.put("data", Map.of(
                     "id", user.getId(),
                     "email", user.getEmail(),
