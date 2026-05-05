@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import defaultEventImg from '../assets/default-event.png';
+import { createEvent } from '../api/auth';
 
 const DEPARTMENTS = [
   'College of Engineering and Architecture',
@@ -57,6 +58,9 @@ export default function AddEventPage() {
     endTime: '',
   });
 
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+
   const handlePictureClick = () => fileInputRef.current.click();
 
   const handlePictureChange = (e) => {
@@ -85,6 +89,82 @@ export default function AddEventPage() {
   const handleDeleteCategory = (index) => {
     setCategories(prev => prev.filter((_, i) => i !== index));
   };
+
+  const handleSubmit = async () => {
+  if (!eventName || !venue || !eventDateTime || selectedDepartments.length === 0) {
+    setSubmitError('Please fill in all required fields and select at least one department.');
+    return;
+  }
+
+  setSubmitting(true);
+  setSubmitError('');
+
+  try {
+    const token = localStorage.getItem('token');
+
+    // Convert picture to Base64
+    let pictureBase64 = null;
+    if (picture) {
+      pictureBase64 = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(picture);
+      });
+    }
+
+    // Convert GCash QR images to Base64
+    let gcashQRsBase64 = null;
+    if (gcashQRs.length > 0) {
+      const qrPromises = gcashQRs.map(qr => new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(qr.file);
+      }));
+      const qrResults = await Promise.all(qrPromises);
+      gcashQRsBase64 = JSON.stringify(qrResults);
+    }
+
+    // Build onsite datetime strings
+    const onsiteStartStr = onsiteDetails.startDate && onsiteDetails.startTime
+      ? `${onsiteDetails.startDate}T${onsiteDetails.startTime}:00`
+      : null;
+    const onsiteEndStr = onsiteDetails.endDate && onsiteDetails.endTime
+      ? `${onsiteDetails.endDate}T${onsiteDetails.endTime}:00`
+      : null;
+
+    const payload = {
+      eventName,
+      venue,
+      eventDateTime: eventDateTime + ':00',
+      departments: selectedDepartments.join('|'),
+      picture: pictureBase64,
+      attachmentEnabled,
+      attachmentInstructions: attachmentEnabled ? attachmentInstructions : null,
+      maxParticipantsEnabled,
+      maxParticipants: maxParticipantsEnabled ? maxParticipants : null,
+      categoriesEnabled,
+      categories: categoriesEnabled ? JSON.stringify(categories) : null,
+      gcashEnabled,
+      gcashQRs: gcashEnabled ? gcashQRsBase64 : null,
+      onsiteEnabled,
+      onsitePersonnel: onsiteEnabled ? onsiteDetails.personnel : null,
+      onsiteLocation: onsiteEnabled ? onsiteDetails.location : null,
+      onsiteStart: onsiteEnabled ? onsiteStartStr : null,
+      onsiteEnd: onsiteEnabled ? onsiteEndStr : null,
+    };
+
+    const res = await createEvent(payload, token);
+    if (res.data.success) {
+      navigate('/dashboard/organizer');
+    } else {
+      setSubmitError(res.data.message || 'Failed to create event.');
+    }
+  } catch (err) {
+    setSubmitError('Something went wrong. Please try again.');
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   return (
     <div style={styles.page}>
@@ -282,10 +362,12 @@ export default function AddEventPage() {
 
               </div>
 
-              {/* Submit Button */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
-                <button style={styles.submitBtn}>SUBMIT</button>
-              </div>
+              {submitError && <p style={{ color: '#ffcccc', fontSize: '13px', textAlign: 'right', marginTop: '8px' }}>{submitError}</p>}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
+                  <button style={styles.submitBtn} onClick={handleSubmit} disabled={submitting}>
+                    {submitting ? 'SUBMITTING...' : 'SUBMIT'}
+                  </button>
+                </div>
 
             </div>
           </div>

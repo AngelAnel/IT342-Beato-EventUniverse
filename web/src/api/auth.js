@@ -25,3 +25,18 @@ export const changePassword = (data, token) =>
   axios.put('http://localhost:8080/api/v1/auth/change-password', data, {
     headers: { Authorization: `Bearer ${token}` },
   });
+
+  export const createEvent = (data, token) =>
+  axios.post('http://localhost:8080/api/v1/events', data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getMyEvents = (token) =>
+  axios.get('http://localhost:8080/api/v1/events/my', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getMyArchivedEvents = (token) =>
+  axios.get('http://localhost:8080/api/v1/events/my/archived', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
