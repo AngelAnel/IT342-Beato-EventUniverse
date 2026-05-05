@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoWhite from '../assets/logo-nobg-whitever.png';
-import { updateProfile } from '../api/auth';
+import { updateProfile, changePassword } from '../api/auth';
 
 const DEPARTMENTS = [
   'College of Engineering and Architecture',
@@ -26,6 +26,15 @@ export default function OrganizerProfile() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [changingPassword, setChangingPassword] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -58,6 +67,40 @@ export default function OrganizerProfile() {
       setError('Something went wrong. Please try again.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (!passwordForm.oldPassword || !passwordForm.newPassword || !passwordForm.confirmPassword) {
+      setPasswordError('All fields are required.');
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      const res = await changePassword({
+        oldPassword: passwordForm.oldPassword,
+        newPassword: passwordForm.newPassword,
+        confirmPassword: passwordForm.confirmPassword,
+      }, token);
+
+      if (res.data.success) {
+        setPasswordSuccess('Password changed successfully!');
+        setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+        setTimeout(() => {
+          setShowPasswordModal(false);
+          setPasswordSuccess('');
+        }, 1500);
+      } else {
+        setPasswordError(res.data.message);
+      }
+    } catch (err) {
+      setPasswordError(err.response?.data?.message || 'Something went wrong.');
+    } finally {
+      setChangingPassword(false);
     }
   };
 
@@ -120,7 +163,9 @@ export default function OrganizerProfile() {
           {success && <p style={styles.successMsg}>{success}</p>}
 
           <div style={styles.bottomRow}>
-            <button style={styles.changePassBtn}>Change Password</button>
+            <button style={styles.changePassBtn} onClick={() => setShowPasswordModal(true)}>
+              Change Password
+            </button>
             {!editing ? (
               <button style={styles.editBtn} onClick={() => setEditing(true)}>Edit</button>
             ) : (
@@ -132,6 +177,54 @@ export default function OrganizerProfile() {
 
         </div>
       </div>
+
+      {/* Password Modal */}
+      {showPasswordModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalBox}>
+            <div style={styles.modalHeader}>
+              <h3 style={styles.modalTitle}>Change Password</h3>
+              <button style={styles.modalCloseBtn} onClick={() => {
+                setShowPasswordModal(false);
+                setPasswordError('');
+                setPasswordSuccess('');
+                setPasswordForm({ oldPassword: '', newPassword: '', confirmPassword: '' });
+              }}>✕</button>
+            </div>
+            <label style={styles.modalLabel}>Old Password</label>
+            <input
+              type="password"
+              value={passwordForm.oldPassword}
+              onChange={(e) => setPasswordForm({ ...passwordForm, oldPassword: e.target.value })}
+              style={styles.modalInput}
+            />
+            <label style={styles.modalLabel}>New Password</label>
+            <input
+              type="password"
+              value={passwordForm.newPassword}
+              onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+              style={styles.modalInput}
+            />
+            <label style={styles.modalLabel}>Confirm Password</label>
+            <input
+              type="password"
+              value={passwordForm.confirmPassword}
+              onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+              style={styles.modalInput}
+            />
+            {passwordError && <p style={styles.modalError}>{passwordError}</p>}
+            {passwordSuccess && <p style={styles.modalSuccess}>{passwordSuccess}</p>}
+            <button
+              style={styles.modalChangeBtn}
+              onClick={handlePasswordChange}
+              disabled={changingPassword}
+            >
+              {changingPassword ? 'Changing...' : 'Change'}
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
@@ -199,10 +292,7 @@ const styles = {
     width: '100%',
     boxSizing: 'border-box',
   },
-  inputActive: {
-    backgroundColor: '#f5f0e8',
-    color: '#3d2b2b',
-  },
+  inputActive: { backgroundColor: '#f5f0e8', color: '#3d2b2b' },
   inputDisabled: {
     backgroundColor: 'rgba(245, 240, 232, 0.15)',
     color: '#f5f0e8',
@@ -248,4 +338,86 @@ const styles = {
   },
   error: { color: '#ffcccc', fontSize: '13px', textAlign: 'center' },
   successMsg: { color: '#90ee90', fontSize: '13px', textAlign: 'center' },
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    backdropFilter: 'blur(3px)',
+    zIndex: 999,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalBox: {
+    backgroundColor: '#6b1a1a',
+    borderRadius: '16px',
+    padding: '32px 40px',
+    width: '380px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  modalHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '12px',
+  },
+  modalTitle: {
+    color: '#f5f0e8',
+    fontFamily: 'Georgia, serif',
+    fontSize: '20px',
+    margin: 0,
+  },
+  modalCloseBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#f5f0e8',
+    fontSize: '18px',
+    cursor: 'pointer',
+  },
+  modalLabel: {
+    color: '#f5f0e8',
+    fontSize: '14px',
+    fontFamily: 'Georgia, serif',
+    marginTop: '8px',
+  },
+  modalInput: {
+    backgroundColor: '#f5f0e8',
+    border: 'none',
+    borderRadius: '6px',
+    padding: '12px',
+    fontSize: '15px',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box',
+  },
+  modalError: {
+    color: '#ffcccc',
+    fontSize: '13px',
+    textAlign: 'center',
+    margin: '4px 0',
+  },
+  modalSuccess: {
+    color: '#90ee90',
+    fontSize: '13px',
+    textAlign: 'center',
+    margin: '4px 0',
+  },
+  modalChangeBtn: {
+    marginTop: '16px',
+    backgroundColor: '#a82020',
+    color: '#f5f0e8',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '12px',
+    fontSize: '15px',
+    fontFamily: 'Georgia, serif',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+    width: '100%',
+  },
 };

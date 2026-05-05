@@ -11,7 +11,7 @@ export const updateProfile = (data, token) =>
   axios.put('http://localhost:8080/api/v1/auth/profile', data, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  
+
 export const getMe = () => {
   const token = localStorage.getItem('token');
   return API.get('/auth/me', {
@@ -20,3 +20,8 @@ export const getMe = () => {
     }
   });
 };
+
+export const changePassword = (data, token) =>
+  axios.put('http://localhost:8080/api/v1/auth/change-password', data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
