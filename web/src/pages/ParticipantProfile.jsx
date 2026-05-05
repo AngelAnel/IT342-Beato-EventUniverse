@@ -16,7 +16,8 @@ export default function ParticipantProfile() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user'));
   const token = localStorage.getItem('token');
-  const isGoogleUser = user?.department === 'Not Specified';
+  const isGoogleUser = user?.authProvider === 'google';
+  const needsDepartment = isGoogleUser && (!user?.department || user?.department === 'Not Specified');
 
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({
@@ -124,7 +125,7 @@ export default function ParticipantProfile() {
         </div>
 
         {/* Google user tip */}
-        {isGoogleUser && (
+        {needsDepartment && (
           <div style={styles.tipBox}>
             <p style={styles.tipTitle}>Do this first!</p>
             <p style={styles.tipText}>

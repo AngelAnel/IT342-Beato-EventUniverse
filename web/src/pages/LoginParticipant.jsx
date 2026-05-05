@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { loginUser } from '../api/auth';
 import logo from '../assets/logo-nobg.png';
 
+
 export default function LoginParticipant() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });

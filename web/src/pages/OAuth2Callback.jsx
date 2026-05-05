@@ -17,6 +17,7 @@ export default function OAuth2Callback() {
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify({
         id, email, firstName, lastName, role, department,
+        authProvider: 'google',
       }));
 
       window.location.replace('/profile/participant');
