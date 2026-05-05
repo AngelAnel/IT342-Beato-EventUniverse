@@ -9,6 +9,7 @@ import edu.cit.beato.eventuniverse.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,11 +21,13 @@ public class AuthController {
     private final AuthService authService;
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthController(AuthService authService, JwtUtil jwtUtil, UserRepository userRepository) {
+    public AuthController(AuthService authService, JwtUtil jwtUtil, UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.authService = authService;
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/register")
@@ -127,6 +130,88 @@ public class AuthController {
                     "department", user.getDepartment()
             ));
 
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Something went wrong");
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<Map<String, Object>> changePassword(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody Map<String, String> request) {
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            String token = authHeader.replace("Bearer ", "");
+
+            if (!jwtUtil.isTokenValid(token)) {
+                response.put("success", false);
+                response.put("message", "Invalid or expired token");
+                return ResponseEntity.status(401).body(response);
+            }
+
+            String email = jwtUtil.extractEmail(token);
+            User user = userRepository.findByEmail(email).orElse(null);
+
+            if (user == null) {
+                response.put("success", false);
+                response.put("message", "User not found");
+                return ResponseEntity.status(404).body(response);
+            }
+
+            // Block Google OAuth users
+            if ("GOOGLE_OAUTH_USER".equals(user.getPassword())) {
+                response.put("success", false);
+                response.put("message", "Google accounts cannot change password here");
+                return ResponseEntity.status(400).body(response);
+            }
+
+            String oldPassword = request.get("oldPassword");
+            String newPassword = request.get("newPassword");
+            String confirmPassword = request.get("confirmPassword");
+
+            // Check old password
+            if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+                response.put("success", false);
+                response.put("message", "Incorrect old password");
+                return ResponseEntity.status(400).body(response);
+            }
+
+            // Check new password requirements
+            if (newPassword == null || newPassword.length() < 8) {
+                response.put("success", false);
+                response.put("message", "Password must be at least 8 characters");
+                return ResponseEntity.status(400).body(response);
+            }
+
+            if (!newPassword.matches(".*[A-Z].*")) {
+                response.put("success", false);
+                response.put("message", "Password must contain at least one uppercase letter");
+                return ResponseEntity.status(400).body(response);
+            }
+
+            if (!newPassword.matches(".*[0-9].*")) {
+                response.put("success", false);
+                response.put("message", "Password must contain at least one number");
+                return ResponseEntity.status(400).body(response);
+            }
+
+            // Check confirm password
+            if (!newPassword.equals(confirmPassword)) {
+                response.put("success", false);
+                response.put("message", "Passwords do not match");
+                return ResponseEntity.status(400).body(response);
+            }
+
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+
+            response.put("success", true);
+            response.put("message", "Password changed successfully");
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
