@@ -163,7 +163,7 @@ public class AuthController {
                 return ResponseEntity.status(404).body(response);
             }
 
-            // Block Google OAuth users
+
             if ("GOOGLE_OAUTH_USER".equals(user.getPassword())) {
                 response.put("success", false);
                 response.put("message", "Google accounts cannot change password here");
@@ -174,14 +174,14 @@ public class AuthController {
             String newPassword = request.get("newPassword");
             String confirmPassword = request.get("confirmPassword");
 
-            // Check old password
+
             if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
                 response.put("success", false);
                 response.put("message", "Incorrect old password");
                 return ResponseEntity.status(400).body(response);
             }
 
-            // Check new password requirements
+
             if (newPassword == null || newPassword.length() < 8) {
                 response.put("success", false);
                 response.put("message", "Password must be at least 8 characters");
@@ -200,7 +200,7 @@ public class AuthController {
                 return ResponseEntity.status(400).body(response);
             }
 
-            // Check confirm password
+
             if (!newPassword.equals(confirmPassword)) {
                 response.put("success", false);
                 response.put("message", "Passwords do not match");
