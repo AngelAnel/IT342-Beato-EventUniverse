@@ -1,9 +1,9 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import defaultEventImg from '../assets/default-event.png';
 
 const DEPARTMENTS = [
-  'All Departments',
   'College of Engineering and Architecture',
   'College of Management, Business and Accountancy',
   'College of Arts, Sciences and Education',
@@ -15,28 +15,47 @@ const DEPARTMENTS = [
 export default function AddEventPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+  const gcashFileRef = useRef(null);
 
+  // Picture
   const [picture, setPicture] = useState(null);
   const [picturePreview, setPicturePreview] = useState(null);
-  const [eventName, setEventName] = useState('');
-  const [department, setDepartment] = useState('');
-  const [venue, setVenue] = useState('');
-  const [eventDate, setEventDate] = useState('');
-  const [eventTime, setEventTime] = useState('');
 
-  // Toggles
-  const [paymentEnabled, setPaymentEnabled] = useState(false);
+  // Basic Info
+  const [eventName, setEventName] = useState('');
+  const [selectedDepartments, setSelectedDepartments] = useState([]);
+  const [venue, setVenue] = useState('');
+  const [eventDateTime, setEventDateTime] = useState('');
+
+  // Additional Info
   const [attachmentEnabled, setAttachmentEnabled] = useState(false);
+  const [attachmentInstructions, setAttachmentInstructions] = useState('');
   const [maxParticipantsEnabled, setMaxParticipantsEnabled] = useState(false);
   const [maxParticipants, setMaxParticipants] = useState('');
-  const [gcashEnabled, setGcashEnabled] = useState(false);
-  const [onsiteEnabled, setOnsiteEnabled] = useState(false);
 
-  // Payment fields
-  const [paymentAmount, setPaymentAmount] = useState('');
-  const [paymentCategory, setPaymentCategory] = useState('');
-  const [gcashDetails, setGcashDetails] = useState('');
-  const [onsiteDetails, setOnsiteDetails] = useState('');
+  // Payment Details
+  const [categoriesEnabled, setCategoriesEnabled] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [categoryForm, setCategoryForm] = useState({ price: '', name: '', slots: '' });
+
+  // Payment Methods
+  const [gcashEnabled, setGcashEnabled] = useState(false);
+  const [gcashQRs, setGcashQRs] = useState([]);
+  const [showGcashModal, setShowGcashModal] = useState(false);
+  const [gcashConfirmed, setGcashConfirmed] = useState(false);
+
+  const [onsiteEnabled, setOnsiteEnabled] = useState(false);
+  const [showOnsiteModal, setShowOnsiteModal] = useState(false);
+  const [onsiteConfirmed, setOnsiteConfirmed] = useState(false);
+  const [onsiteDetails, setOnsiteDetails] = useState({
+    personnel: '',
+    location: '',
+    startDate: '',
+    startTime: '',
+    endDate: '',
+    endTime: '',
+  });
 
   const handlePictureClick = () => fileInputRef.current.click();
 
@@ -48,193 +67,400 @@ export default function AddEventPage() {
     }
   };
 
+  const handleDepartmentToggle = (dept) => {
+    setSelectedDepartments(prev =>
+      prev.includes(dept)
+        ? prev.filter(d => d !== dept)
+        : [...prev, dept]
+    );
+  };
+
+  const handleAddCategory = () => {
+    if (!categoryForm.price || !categoryForm.name || !categoryForm.slots) return;
+    setCategories(prev => [...prev, { ...categoryForm }]);
+    setCategoryForm({ price: '', name: '', slots: '' });
+    setShowCategoryModal(false);
+  };
+
+  const handleDeleteCategory = (index) => {
+    setCategories(prev => prev.filter((_, i) => i !== index));
+  };
+
   return (
     <div style={styles.page}>
       <Navbar />
 
       <div style={styles.body}>
-        <div style={styles.card}>
+
+        {/* Page Title */}
+        <div style={styles.titleRow}>
+          <button style={styles.backBtn} onClick={() => navigate('/dashboard/organizer')}>&#8249;</button>
           <h1 style={styles.pageTitle}>ADD AN EVENT</h1>
+        </div>
 
-          {/* Picture upload */}
-          <div style={styles.pictureBox} onClick={handlePictureClick}>
-            {picturePreview
-              ? <img src={picturePreview} alt="Event" style={styles.picturePreview} />
-              : <span style={styles.picturePlaceholder}>+ Picture</span>
-            }
-          </div>
-          <input
-            type="file"
-            accept="image/*"
-            ref={fileInputRef}
-            style={{ display: 'none' }}
-            onChange={handlePictureChange}
-          />
+        {/* Two column layout */}
+        <div style={styles.twoCol}>
 
-          {/* Event Name */}
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Name of the Event</label>
-            <input
-              type="text"
-              placeholder="Add a name..."
-              value={eventName}
-              onChange={(e) => setEventName(e.target.value)}
-              style={styles.inputFull}
-            />
-          </div>
+          {/* LEFT COLUMN */}
+          <div style={styles.leftCol}>
 
-          {/* Two column row */}
-          <div style={styles.twoCol}>
-
-            {/* Left column */}
-            <div style={styles.col}>
-
-              {/* Department */}
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Choose Department</label>
-                <div style={styles.selectWrap}>
-                  <select
-                    value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
-                    style={styles.select}>
-                    <option value="">List of Departments...</option>
-                    {DEPARTMENTS.map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              {/* Payment toggle */}
-              <div style={styles.toggleRow}>
-                <label style={styles.label}>Payment (Optional)</label>
-                <Toggle checked={paymentEnabled} onChange={setPaymentEnabled} />
-              </div>
-
-              {paymentEnabled && (
-                <div style={styles.paymentFields}>
-                  <div style={styles.paymentBtnRow}>
-                    <input
-                      type="number"
-                      placeholder="Add Amount"
-                      value={paymentAmount}
-                      onChange={(e) => setPaymentAmount(e.target.value)}
-                      style={styles.smallInput}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Add Category"
-                      value={paymentCategory}
-                      onChange={(e) => setPaymentCategory(e.target.value)}
-                      style={styles.smallInput}
-                    />
-                    <span style={styles.availableTag}>Amount Available</span>
-                  </div>
-
-                  {/* Payment method */}
-                  <div style={styles.fieldGroup}>
-                    <label style={styles.label}>Payment Method</label>
-
-                    <div style={styles.toggleRow}>
-                      <span style={styles.methodLabel}>Online (Gcash)</span>
-                      <Toggle checked={gcashEnabled} onChange={setGcashEnabled} />
+            {/* Picture Upload */}
+            <div style={styles.pictureBox} onClick={handlePictureClick}>
+              {picturePreview
+                ? <img src={picturePreview} alt="Event" style={styles.picturePreview} />
+                : (
+                  <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                    <img src={defaultEventImg} alt="Default" style={styles.picturePreview} />
+                    <div style={styles.pictureOverlay}>
+                      <span style={styles.picturePlaceholder}>+Picture</span>
                     </div>
-                    {gcashEnabled && (
-                      <input
-                        type="text"
-                        placeholder="Add Gcash details..."
-                        value={gcashDetails}
-                        onChange={(e) => setGcashDetails(e.target.value)}
-                        style={{ ...styles.smallInput, width: '100%', marginBottom: '8px' }}
-                      />
-                    )}
-
-                    <div style={styles.toggleRow}>
-                      <span style={styles.methodLabel}>Onsite Payment</span>
-                      <Toggle checked={onsiteEnabled} onChange={setOnsiteEnabled} />
-                    </div>
-                    {onsiteEnabled && (
-                      <input
-                        type="text"
-                        placeholder="Add onsite payment details..."
-                        value={onsiteDetails}
-                        onChange={(e) => setOnsiteDetails(e.target.value)}
-                        style={{ ...styles.smallInput, width: '100%', marginBottom: '8px' }}
-                      />
-                    )}
                   </div>
-                </div>
-              )}
+                )
+              }
             </div>
+            <input
+              type="file"
+              accept="image/*"
+              ref={fileInputRef}
+              style={{ display: 'none' }}
+              onChange={handlePictureChange}
+            />
 
-            {/* Right column */}
-            <div style={styles.col}>
+            {/* Basic Information Card */}
+            <div style={styles.card}>
+              <h2 style={styles.cardTitle}>Basic Information</h2>
 
-              {/* Attachment toggle */}
+              <label style={styles.label}>Name of the Event</label>
+              <input
+                type="text"
+                placeholder="Add a name..."
+                value={eventName}
+                onChange={(e) => setEventName(e.target.value)}
+                style={styles.input}
+              />
+
+              <label style={styles.label}>Choose Department</label>
+              <div style={styles.checkboxGroup}>
+                {DEPARTMENTS.map(dept => (
+                  <div key={dept} style={styles.checkboxRow}>
+                    <input
+                      type="checkbox"
+                      id={dept}
+                      checked={selectedDepartments.includes(dept)}
+                      onChange={() => handleDepartmentToggle(dept)}
+                      style={styles.checkbox}
+                    />
+                    <label htmlFor={dept} style={styles.checkboxLabel}>{dept}</label>
+                  </div>
+                ))}
+              </div>
+
+              <label style={styles.label}>Event Venue</label>
+              <input
+                type="text"
+                placeholder="Add a venue..."
+                value={venue}
+                onChange={(e) => setVenue(e.target.value)}
+                style={styles.input}
+              />
+
+              <label style={styles.label}>Event Date and Time</label>
+              <input
+                type="datetime-local"
+                value={eventDateTime}
+                onChange={(e) => setEventDateTime(e.target.value)}
+                style={styles.input}
+              />
+            </div>
+          </div>
+
+          {/* RIGHT COLUMN */}
+          <div style={styles.rightCol}>
+
+            {/* Additional Information Card */}
+            <div style={styles.card}>
+              <h2 style={styles.cardTitle}>Additional Information</h2>
+
+              {/* Attachment Field */}
               <div style={styles.toggleRow}>
-                <label style={styles.label}>Attachment Field (Optional)</label>
+                <div>
+                  <span style={styles.toggleLabel}>Attachment Field (Optional)</span>
+                  <p style={styles.toggleNote}>Note: This field is applicable for events that requires google drive links, profile links, etc.</p>
+                </div>
                 <Toggle checked={attachmentEnabled} onChange={setAttachmentEnabled} />
               </div>
+              {attachmentEnabled && (
+                <textarea
+                  placeholder="Additional instructions..."
+                  value={attachmentInstructions}
+                  onChange={(e) => setAttachmentInstructions(e.target.value)}
+                  style={styles.textarea}
+                />
+              )}
 
-              {/* Max participants toggle */}
+              <div style={styles.divider} />
+
+              {/* Max Participants */}
               <div style={styles.toggleRow}>
-                <label style={styles.label}>Event Maximum Participants:</label>
+                <div>
+                  <span style={styles.toggleLabel}>Event Maximum Participants:</span>
+                  <p style={styles.toggleNote}>Note: No field specifications means the event has no maximum participant limit.</p>
+                </div>
                 <Toggle checked={maxParticipantsEnabled} onChange={setMaxParticipantsEnabled} />
               </div>
               {maxParticipantsEnabled && (
                 <input
                   type="number"
-                  placeholder="Max participants"
+                  placeholder="e.g. 100"
                   value={maxParticipants}
                   onChange={(e) => setMaxParticipants(e.target.value)}
-                  style={{ ...styles.smallInput, width: '100px', marginBottom: '12px' }}
+                  style={{ ...styles.input, width: '100px' }}
                 />
               )}
 
-              {/* Venue */}
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Event Venue</label>
-                <input
-                  type="text"
-                  placeholder="Add Venue..."
-                  value={venue}
-                  onChange={(e) => setVenue(e.target.value)}
-                  style={styles.inputFull}
-                />
-              </div>
+              <div style={styles.divider} />
 
-              {/* Date and Time */}
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Event Date and Time</label>
-                <div style={styles.dateTimeRow}>
-                  <input
-                    type="date"
-                    value={eventDate}
-                    onChange={(e) => setEventDate(e.target.value)}
-                    style={styles.dateInput}
-                  />
-                  <input
-                    type="time"
-                    value={eventTime}
-                    onChange={(e) => setEventTime(e.target.value)}
-                    placeholder="Input time (AM/PM)"
-                    style={styles.timeInput}
-                  />
+              {/* Payment Details */}
+              <h2 style={styles.cardTitle}>Payment Details:</h2>
+
+              {/* Categories */}
+              <div style={styles.toggleRow}>
+                <div>
+                  <span style={styles.toggleLabel}>Categories Specifications:</span>
+                  <p style={styles.toggleNote}>Note: No field specifications means event is free.</p>
                 </div>
+                <Toggle checked={categoriesEnabled} onChange={setCategoriesEnabled} />
               </div>
 
-              {/* Submit */}
-              <button style={styles.submitBtn} disabled>
-                SUBMIT
-              </button>
+              {categoriesEnabled && (
+                <div style={styles.categoriesSection}>
+                  <button style={styles.addCategoryBtn} onClick={() => setShowCategoryModal(true)}>
+                    Add Category
+                  </button>
+                  {categories.map((cat, index) => (
+                    <div key={index} style={styles.categoryTag}>
+                      <span>P {cat.price} • {cat.name} • {cat.slots} available slots</span>
+                      <button style={styles.deleteCategoryBtn} onClick={() => handleDeleteCategory(index)}>✕</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div style={styles.divider} />
+
+              {/* Payment Methods */}
+              <h3 style={{ ...styles.toggleLabel, marginTop: '8px' }}>Payment Methods:</h3>
+              <div style={styles.paymentMethodsRow}>
+
+                {/* GCash */}
+                <div style={styles.paymentMethod}>
+                  <div style={styles.toggleRow}>
+                    <span style={styles.toggleLabel}>Online (Gcash)</span>
+                    <Toggle checked={gcashEnabled} onChange={setGcashEnabled} />
+                  </div>
+                  {gcashEnabled && (
+                    <button style={styles.addDetailsBtn} onClick={() => setShowGcashModal(true)}>
+                      {gcashConfirmed ? 'Edit' : 'Add Details'}
+                    </button>
+                  )}
+                </div>
+
+                <div style={styles.paymentDivider} />
+
+                {/* Onsite */}
+                <div style={styles.paymentMethod}>
+                  <div style={styles.toggleRow}>
+                    <span style={styles.toggleLabel}>Onsite Payment</span>
+                    <Toggle checked={onsiteEnabled} onChange={setOnsiteEnabled} />
+                  </div>
+                  {onsiteEnabled && (
+                    <button style={styles.addDetailsBtn} onClick={() => setShowOnsiteModal(true)}>
+                      {onsiteConfirmed ? 'Edit' : 'Add Details'}
+                    </button>
+                  )}
+                </div>
+
+              </div>
+
+              {/* Submit Button */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '24px' }}>
+                <button style={styles.submitBtn}>SUBMIT</button>
+              </div>
 
             </div>
           </div>
         </div>
       </div>
+
+      {/* Category Modal */}
+      {showCategoryModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalBox}>
+            <h3 style={styles.modalTitle}>INPUT CATEGORY DETAILS</h3>
+
+            <label style={styles.modalLabel}>Price Amount</label>
+            <input
+              type="number"
+              value={categoryForm.price}
+              onChange={(e) => setCategoryForm({ ...categoryForm, price: e.target.value })}
+              style={styles.modalInput}
+            />
+
+            <label style={styles.modalLabel}>Category</label>
+            <input
+              type="text"
+              value={categoryForm.name}
+              onChange={(e) => setCategoryForm({ ...categoryForm, name: e.target.value })}
+              style={styles.modalInput}
+            />
+
+            <label style={styles.modalLabel}>Amount Available</label>
+            <input
+              type="number"
+              value={categoryForm.slots}
+              onChange={(e) => setCategoryForm({ ...categoryForm, slots: e.target.value })}
+              style={styles.modalInput}
+            />
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px', gap: '10px' }}>
+              <button style={styles.modalCancelBtn} onClick={() => {
+                setShowCategoryModal(false);
+                setCategoryForm({ price: '', name: '', slots: '' });
+              }}>Cancel</button>
+              <button style={styles.modalAddBtn} onClick={handleAddCategory}>Add</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* GCash Modal */}
+      {showGcashModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalBox}>
+            <div style={styles.modalHeader}>
+              <h3 style={styles.modalTitle}>Online Payment Details</h3>
+              <button style={styles.modalCloseBtn} onClick={() => setShowGcashModal(false)}>✕</button>
+            </div>
+
+            <p style={styles.modalLabel}>Add GCash QR here</p>
+            <p style={styles.toggleNote}>You can add up to 3 GCash QR codes</p>
+
+            <div style={styles.qrPreviewRow}>
+              {gcashQRs.map((qr, index) => (
+                <div key={index} style={styles.qrPreviewWrap}>
+                  <img src={qr.preview} alt={`QR ${index + 1}`} style={styles.qrPreview} />
+                  <button
+                    style={styles.qrDeleteBtn}
+                    onClick={() => setGcashQRs(prev => prev.filter((_, i) => i !== index))}
+                  >✕</button>
+                </div>
+              ))}
+              {gcashQRs.length < 3 && (
+                <button style={styles.addPhotoBtn} onClick={() => gcashFileRef.current.click()}>
+                  Add photo
+                </button>
+              )}
+            </div>
+
+            <input
+              type="file"
+              accept="image/*"
+              ref={gcashFileRef}
+              style={{ display: 'none' }}
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file && gcashQRs.length < 3) {
+                  setGcashQRs(prev => [...prev, { file, preview: URL.createObjectURL(file) }]);
+                }
+                e.target.value = '';
+              }}
+            />
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+              <button style={styles.modalOkBtn} onClick={() => {
+                setGcashConfirmed(true);
+                setShowGcashModal(false);
+              }}>OK</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Onsite Modal */}
+      {showOnsiteModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalBox}>
+            <div style={styles.modalHeader}>
+              <h3 style={styles.modalTitle}>Onsite Payment Details</h3>
+              <button style={styles.modalCloseBtn} onClick={() => setShowOnsiteModal(false)}>✕</button>
+            </div>
+
+            <label style={styles.modalLabel}>Name of Personnel</label>
+            <input
+              type="text"
+              value={onsiteDetails.personnel}
+              onChange={(e) => setOnsiteDetails({ ...onsiteDetails, personnel: e.target.value })}
+              style={styles.modalInput}
+            />
+
+            <label style={styles.modalLabel}>Location</label>
+            <input
+              type="text"
+              value={onsiteDetails.location}
+              onChange={(e) => setOnsiteDetails({ ...onsiteDetails, location: e.target.value })}
+              style={styles.modalInput}
+            />
+
+            <label style={styles.modalLabel}>Payment Duration</label>
+            <div style={styles.durationRow}>
+              <div style={styles.durationField}>
+                <label style={styles.durationLabel}>Start Date</label>
+                <input
+                  type="date"
+                  value={onsiteDetails.startDate}
+                  onChange={(e) => setOnsiteDetails({ ...onsiteDetails, startDate: e.target.value })}
+                  style={styles.modalInput}
+                />
+                <label style={styles.durationLabel}>Start Time</label>
+                <input
+                  type="time"
+                  value={onsiteDetails.startTime}
+                  onChange={(e) => setOnsiteDetails({ ...onsiteDetails, startTime: e.target.value })}
+                  style={styles.modalInput}
+                />
+              </div>
+              <div style={styles.durationField}>
+                <label style={styles.durationLabel}>End Date</label>
+                <input
+                  type="date"
+                  value={onsiteDetails.endDate}
+                  onChange={(e) => setOnsiteDetails({ ...onsiteDetails, endDate: e.target.value })}
+                  style={styles.modalInput}
+                />
+                <label style={styles.durationLabel}>End Time</label>
+                <input
+                  type="time"
+                  value={onsiteDetails.endTime}
+                  onChange={(e) => setOnsiteDetails({ ...onsiteDetails, endTime: e.target.value })}
+                  style={styles.modalInput}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '16px' }}>
+              <button style={styles.modalOkBtn} onClick={() => {
+                setOnsiteConfirmed(true);
+                setShowOnsiteModal(false);
+              }}>OK</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
 
-// Reusable toggle switch component
 function Toggle({ checked, onChange }) {
   return (
     <div
@@ -243,7 +469,7 @@ function Toggle({ checked, onChange }) {
         width: '44px',
         height: '24px',
         borderRadius: '12px',
-        backgroundColor: checked ? '#6b1a1a' : '#ccc',
+        backgroundColor: checked ? '#a82020' : '#ccc',
         position: 'relative',
         cursor: 'pointer',
         transition: 'background 0.2s',
@@ -266,36 +492,76 @@ function Toggle({ checked, onChange }) {
 const styles = {
   page: { minHeight: '100vh', backgroundColor: '#f5f0e8' },
   body: { padding: '32px 48px' },
-  card: {
+  titleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    marginBottom: '24px',
+  },
+  backBtn: {
     backgroundColor: '#6b1a1a',
-    borderRadius: '16px',
-    padding: '36px 40px',
-    maxWidth: '900px',
-    margin: '0 auto',
+    color: '#f5f0e8',
+    border: 'none',
+    borderRadius: '50%',
+    width: '36px',
+    height: '36px',
+    fontSize: '22px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   pageTitle: {
-    color: '#f5f0e8',
-    fontSize: '28px',
+    fontSize: '32px',
     fontWeight: 'bold',
+    color: '#6b1a1a',
     fontFamily: 'Georgia, serif',
     letterSpacing: '2px',
-    marginBottom: '24px',
+    margin: 0,
+  },
+  twoCol: {
+    display: 'flex',
+    gap: '32px',
+    alignItems: 'flex-start',
+  },
+  leftCol: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+  },
+  rightCol: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
   },
   pictureBox: {
     width: '100%',
-    height: '180px',
+    height: '200px',
     backgroundColor: '#d0cdc5',
-    borderRadius: '8px',
+    borderRadius: '12px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    marginBottom: '24px',
     overflow: 'hidden',
   },
+  pictureOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: '12px',
+  },
   picturePlaceholder: {
-    fontSize: '24px',
-    color: '#666',
+    fontSize: '28px',
+    color: '#FEF9E1',
     fontFamily: 'Georgia, serif',
   },
   picturePreview: {
@@ -303,120 +569,334 @@ const styles = {
     height: '100%',
     objectFit: 'cover',
   },
-  fieldGroup: { marginBottom: '16px' },
+  card: {
+    backgroundColor: '#6b1a1a',
+    borderRadius: '16px',
+    padding: '24px 28px',
+  },
+  cardTitle: {
+    color: '#f5f0e8',
+    fontSize: '20px',
+    fontWeight: 'bold',
+    fontFamily: 'Georgia, serif',
+    margin: '0 0 16px 0',
+  },
   label: {
     color: '#f5f0e8',
     fontWeight: 'bold',
-    fontSize: '15px',
+    fontSize: '14px',
     display: 'block',
     marginBottom: '6px',
     fontFamily: 'Georgia, serif',
+    marginTop: '12px',
   },
-  inputFull: {
+  input: {
     width: '100%',
     padding: '12px 16px',
     borderRadius: '8px',
     border: 'none',
     backgroundColor: '#f5f0e8',
-    fontSize: '15px',
+    fontSize: '14px',
     outline: 'none',
     boxSizing: 'border-box',
     color: '#3d2b2b',
+    fontFamily: 'Georgia, serif',
   },
-  selectWrap: { position: 'relative' },
-  select: {
+  checkboxGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    marginBottom: '12px',
+  },
+  checkboxRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  checkbox: {
+    width: '16px',
+    height: '16px',
+    cursor: 'pointer',
+    accentColor: '#a82020',
+  },
+  checkboxLabel: {
+    color: '#f5f0e8',
+    fontSize: '13px',
+    fontFamily: 'Georgia, serif',
+    cursor: 'pointer',
+  },
+  toggleRow: {
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: '12px',
+    marginBottom: '8px',
+  },
+  toggleLabel: {
+    color: '#f5f0e8',
+    fontWeight: 'bold',
+    fontSize: '15px',
+    fontFamily: 'Georgia, serif',
+    display: 'block',
+  },
+  toggleNote: {
+    color: 'rgba(245,240,232,0.6)',
+    fontSize: '11px',
+    fontFamily: 'Georgia, serif',
+    margin: '2px 0 0 0',
+    fontStyle: 'italic',
+  },
+  textarea: {
     width: '100%',
-    padding: '12px 16px',
+    padding: '12px',
     borderRadius: '8px',
     border: 'none',
     backgroundColor: '#f5f0e8',
-    fontSize: '15px',
+    fontSize: '14px',
     outline: 'none',
-    appearance: 'auto',
-    cursor: 'pointer',
+    boxSizing: 'border-box',
     color: '#3d2b2b',
-  },
-  twoCol: {
-    display: 'flex',
-    gap: '32px',
-    alignItems: 'flex-start',
-  },
-  col: { flex: 1 },
-  toggleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '12px',
-    marginBottom: '10px',
-  },
-  paymentFields: { marginBottom: '12px' },
-  paymentBtnRow: {
-    display: 'flex',
-    gap: '8px',
-    alignItems: 'center',
-    flexWrap: 'wrap',
+    fontFamily: 'Georgia, serif',
+    minHeight: '80px',
+    resize: 'vertical',
     marginBottom: '12px',
   },
-  smallInput: {
-    padding: '8px 12px',
-    borderRadius: '20px',
-    border: 'none',
-    backgroundColor: '#f5f0e8',
-    fontSize: '13px',
-    outline: 'none',
-    color: '#3d2b2b',
-    cursor: 'text',
+  divider: {
+    height: '1px',
+    backgroundColor: 'rgba(245,240,232,0.2)',
+    margin: '16px 0',
   },
-  availableTag: {
+  categoriesSection: { marginBottom: '12px' },
+  addCategoryBtn: {
+    backgroundColor: '#f5f0e8',
+    color: '#6b1a1a',
+    border: 'none',
+    borderRadius: '20px',
+    padding: '6px 16px',
+    fontSize: '13px',
+    fontFamily: 'Georgia, serif',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    marginBottom: '10px',
+  },
+  categoryTag: {
     backgroundColor: '#f5f0e8',
     color: '#6b1a1a',
     borderRadius: '20px',
-    padding: '6px 12px',
+    padding: '8px 14px',
+    fontSize: '13px',
+    fontFamily: 'Georgia, serif',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '6px',
+  },
+  deleteCategoryBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#6b1a1a',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    padding: '0 0 0 8px',
+  },
+  paymentMethodsRow: {
+    display: 'flex',
+    gap: '16px',
+    alignItems: 'flex-start',
+    marginTop: '8px',
+  },
+  paymentMethod: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  paymentDivider: {
+    width: '1px',
+    backgroundColor: 'rgba(245,240,232,0.2)',
+    alignSelf: 'stretch',
+  },
+  addDetailsBtn: {
+    backgroundColor: '#f5f0e8',
+    color: '#6b1a1a',
+    border: 'none',
+    borderRadius: '20px',
+    padding: '6px 14px',
     fontSize: '12px',
     fontFamily: 'Georgia, serif',
-  },
-  methodLabel: {
-    color: '#f5f0e8',
-    fontSize: '15px',
-    fontFamily: 'Georgia, serif',
-  },
-  dateTimeRow: {
-    display: 'flex',
-    gap: '12px',
-  },
-  dateInput: {
-    flex: 1,
-    padding: '10px 12px',
-    borderRadius: '8px',
-    border: 'none',
-    backgroundColor: '#f5f0e8',
-    fontSize: '14px',
-    outline: 'none',
-    color: '#3d2b2b',
-  },
-  timeInput: {
-    flex: 1,
-    padding: '10px 12px',
-    borderRadius: '8px',
-    border: 'none',
-    backgroundColor: '#f5f0e8',
-    fontSize: '14px',
-    outline: 'none',
-    color: '#3d2b2b',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    width: 'fit-content',
   },
   submitBtn: {
-    marginTop: '24px',
     backgroundColor: '#a82020',
     color: '#f5f0e8',
     border: 'none',
     borderRadius: '8px',
-    padding: '14px 40px',
+    padding: '14px 48px',
     fontSize: '18px',
     fontWeight: 'bold',
     fontFamily: 'Georgia, serif',
     letterSpacing: '2px',
-    cursor: 'not-allowed',
-    float: 'right',
-    opacity: 0.9,
+    cursor: 'pointer',
+  },
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    backdropFilter: 'blur(3px)',
+    zIndex: 999,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalBox: {
+    backgroundColor: '#6b1a1a',
+    borderRadius: '16px',
+    padding: '32px 40px',
+    width: '380px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  },
+  modalHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '16px',
+  },
+  modalTitle: {
+    color: '#f5f0e8',
+    fontFamily: 'Georgia, serif',
+    fontSize: '18px',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: '12px',
+    margin: 0,
+  },
+  modalCloseBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#f5f0e8',
+    fontSize: '18px',
+    cursor: 'pointer',
+  },
+  modalLabel: {
+    color: '#f5f0e8',
+    fontSize: '14px',
+    fontFamily: 'Georgia, serif',
+    marginTop: '8px',
+    fontWeight: 'bold',
+  },
+  modalInput: {
+    backgroundColor: '#f5f0e8',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '12px',
+    fontSize: '14px',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box',
+    color: '#3d2b2b',
+  },
+  modalCancelBtn: {
+    backgroundColor: 'transparent',
+    color: '#f5f0e8',
+    border: '1px solid #f5f0e8',
+    borderRadius: '8px',
+    padding: '8px 20px',
+    fontSize: '14px',
+    fontFamily: 'Georgia, serif',
+    cursor: 'pointer',
+  },
+  modalAddBtn: {
+    backgroundColor: '#a82020',
+    color: '#f5f0e8',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '8px 24px',
+    fontSize: '14px',
+    fontFamily: 'Georgia, serif',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+  },
+  modalOkBtn: {
+    backgroundColor: '#2ecc71',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '8px',
+    padding: '10px 28px',
+    fontSize: '15px',
+    fontFamily: 'Georgia, serif',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+  },
+  qrPreviewRow: {
+    display: 'flex',
+    gap: '10px',
+    flexWrap: 'wrap',
+    marginTop: '8px',
+    marginBottom: '8px',
+  },
+  qrPreviewWrap: {
+    position: 'relative',
+    width: '80px',
+    height: '80px',
+  },
+  qrPreview: {
+    width: '80px',
+    height: '80px',
+    objectFit: 'cover',
+    borderRadius: '8px',
+    border: '2px solid #f5f0e8',
+  },
+  qrDeleteBtn: {
+    position: 'absolute',
+    top: '-6px',
+    right: '-6px',
+    background: '#a82020',
+    border: 'none',
+    borderRadius: '50%',
+    width: '20px',
+    height: '20px',
+    color: '#fff',
+    fontSize: '11px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addPhotoBtn: {
+    backgroundColor: '#f5f0e8',
+    color: '#6b1a1a',
+    border: 'none',
+    borderRadius: '20px',
+    padding: '8px 16px',
+    fontSize: '13px',
+    fontFamily: 'Georgia, serif',
+    cursor: 'pointer',
+    fontWeight: 'bold',
+    alignSelf: 'center',
+  },
+  durationRow: {
+    display: 'flex',
+    gap: '12px',
+    marginTop: '8px',
+  },
+  durationField: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  durationLabel: {
+    color: 'rgba(245,240,232,0.7)',
+    fontSize: '12px',
+    fontFamily: 'Georgia, serif',
+    marginTop: '6px',
   },
 };
