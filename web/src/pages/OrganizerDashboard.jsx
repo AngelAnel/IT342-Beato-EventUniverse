@@ -14,6 +14,11 @@ const DEPT_ACRONYMS = {
   'College of Criminal Justice': 'CCJ',
 };
 
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
 function getDepartmentDisplay(departments) {
   if (!departments) return 'Open for all';
   const depts = departments.split('|').map(d => d.trim());
@@ -58,7 +63,6 @@ function EventCard({ event }) {
 
   return (
     <div style={styles.card}>
-      {/* Picture */}
       <div style={styles.cardPicture}>
         <img
           src={event.picture || defaultEventImg}
@@ -66,8 +70,6 @@ function EventCard({ event }) {
           style={styles.cardImg}
         />
       </div>
-
-      {/* Info */}
       <div style={styles.cardInfo}>
         <div style={styles.cardTitleRow}>
           <span style={styles.cardTitle}>{event.eventName}</span>
@@ -78,7 +80,6 @@ function EventCard({ event }) {
             {status}
           </span>
         </div>
-
         <div style={styles.cardDetails}>
           {paymentDisplay !== 'Free' ? (
             <span>{paymentDisplay} • {deptDisplay}{paymentMethods ? ` • ${paymentMethods}` : ''}</span>
@@ -86,7 +87,6 @@ function EventCard({ event }) {
             <span>Free • {deptDisplay}</span>
           )}
         </div>
-
         <div style={styles.cardBottom}>
           <span style={styles.cardMeta}>{event.venue} &nbsp; {formatDateTime(event.eventDateTime)}</span>
           <span style={styles.viewDetails}>View Details</span>
@@ -94,6 +94,24 @@ function EventCard({ event }) {
       </div>
     </div>
   );
+}
+
+function applyFilters(events, selectedMonth, selectedDept) {
+  return events.filter(event => {
+    // Month filter
+    if (selectedMonth && selectedMonth !== 'Month') {
+      const eventMonth = MONTHS[new Date(event.eventDateTime).getMonth()];
+      if (eventMonth !== selectedMonth) return false;
+    }
+
+    // Department filter
+    if (selectedDept && selectedDept !== 'Department' && selectedDept !== 'All Departments') {
+      const depts = (event.departments || '').split('|').map(d => d.trim());
+      if (!depts.includes(selectedDept)) return false;
+    }
+
+    return true;
+  });
 }
 
 export default function OrganizerDashboard() {
@@ -105,6 +123,8 @@ export default function OrganizerDashboard() {
   const [events, setEvents] = useState([]);
   const [archivedEvents, setArchivedEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMonth, setSelectedMonth] = useState('Month');
+  const [selectedDept, setSelectedDept] = useState('Department');
 
   useEffect(() => {
     fetchEvents();
@@ -125,6 +145,11 @@ export default function OrganizerDashboard() {
     }
   };
 
+  const handleFilterChange = ({ month, dept }) => {
+    setSelectedMonth(month);
+    setSelectedDept(dept);
+  };
+
   const handlePageChange = (page) => {
     if (page === 'addevent') {
       navigate('/organizer/add-event');
@@ -134,21 +159,24 @@ export default function OrganizerDashboard() {
   };
 
   const renderContent = () => {
+    const activeEvents = applyFilters(events, selectedMonth, selectedDept);
+    const filteredArchived = applyFilters(archivedEvents, selectedMonth, selectedDept);
+
     switch (activePage) {
       case 'home':
         if (loading) return <p style={styles.emptyText}>Loading events...</p>;
-        if (events.length === 0) return <p style={styles.emptyText}>There are currently no Events Posted</p>;
+        if (activeEvents.length === 0) return <p style={styles.emptyText}>No events found for the selected filter.</p>;
         return (
           <div style={styles.eventsGrid}>
-            {events.map(event => <EventCard key={event.id} event={event} />)}
+            {activeEvents.map(event => <EventCard key={event.id} event={event} />)}
           </div>
         );
       case 'archive':
         if (loading) return <p style={styles.emptyText}>Loading...</p>;
-        if (archivedEvents.length === 0) return <p style={styles.emptyText}>No archived events yet</p>;
+        if (filteredArchived.length === 0) return <p style={styles.emptyText}>No archived events found.</p>;
         return (
           <div style={styles.eventsGrid}>
-            {archivedEvents.map(event => <EventCard key={event.id} event={event} />)}
+            {filteredArchived.map(event => <EventCard key={event.id} event={event} />)}
           </div>
         );
       default:
@@ -165,10 +193,17 @@ export default function OrganizerDashboard() {
             Hello there, {user?.firstName}! Welcome Back
           </h1>
         )}
+        {activePage === 'archive' && (
+          <div style={styles.archiveTitleRow}>
+            <button style={styles.backBtn} onClick={() => setActivePage('home')}>&#8249;</button>
+            <h1 style={styles.archiveTitle}>Archives</h1>
+          </div>
+        )}
         <DashboardNav
           role="Organization"
           activePage={activePage}
           onPageChange={handlePageChange}
+          onFilterChange={handleFilterChange}
         />
         {renderContent()}
       </div>
@@ -186,6 +221,32 @@ const styles = {
     fontFamily: 'Georgia, serif',
     marginBottom: '24px',
     lineHeight: '1.2',
+  },
+  archiveTitleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    marginBottom: '24px',
+  },
+  backBtn: {
+    backgroundColor: '#6b1a1a',
+    color: '#f5f0e8',
+    border: 'none',
+    borderRadius: '50%',
+    width: '36px',
+    height: '36px',
+    fontSize: '22px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  archiveTitle: {
+    fontSize: '42px',
+    fontWeight: 'bold',
+    color: '#6b1a1a',
+    fontFamily: 'Georgia, serif',
+    margin: 0,
   },
   emptyText: {
     fontSize: '22px',

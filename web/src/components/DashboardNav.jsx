@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import filterIcon from '../assets/filter.png';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',
@@ -15,11 +16,23 @@ const DEPARTMENTS = [
   'College of Criminal Justice',
 ];
 
-export default function DashboardNav({ role, activePage, onPageChange }) {
+export default function DashboardNav({ role, activePage, onPageChange, onFilterChange }) {
   const [monthOpen, setMonthOpen] = useState(false);
   const [deptOpen, setDeptOpen] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState('Month');
   const [selectedDept, setSelectedDept] = useState('Department');
+
+  const handleMonthSelect = (m) => {
+    setSelectedMonth(m);
+    setMonthOpen(false);
+    if (onFilterChange) onFilterChange({ month: m, dept: selectedDept });
+  };
+
+  const handleDeptSelect = (d) => {
+    setSelectedDept(d);
+    setDeptOpen(false);
+    if (onFilterChange) onFilterChange({ month: selectedMonth, dept: d });
+  };
 
   return (
     <div style={styles.navWrap}>
@@ -61,14 +74,20 @@ export default function DashboardNav({ role, activePage, onPageChange }) {
         <button
           style={styles.navBtn}
           onClick={() => { setMonthOpen(!monthOpen); setDeptOpen(false); }}>
-          <span style={styles.icon}>▽</span>
-          {selectedMonth} ◀
+          <img src={filterIcon} alt="filter" style={styles.filterIcon} />
+          {selectedMonth}
+          <span style={styles.arrow}>◀</span>
         </button>
         {monthOpen && (
           <div style={styles.dropdown}>
+            <div
+              style={styles.dropdownItem}
+              onClick={() => handleMonthSelect('Month')}>
+              All Months
+            </div>
             {MONTHS.map(m => (
               <div key={m} style={styles.dropdownItem}
-                onClick={() => { setSelectedMonth(m); setMonthOpen(false); }}>
+                onClick={() => handleMonthSelect(m)}>
                 {m}
               </div>
             ))}
@@ -81,14 +100,15 @@ export default function DashboardNav({ role, activePage, onPageChange }) {
         <button
           style={styles.navBtn}
           onClick={() => { setDeptOpen(!deptOpen); setMonthOpen(false); }}>
-          <span style={styles.icon}>▽</span>
-          {selectedDept} ◀
+          <img src={filterIcon} alt="filter" style={styles.filterIcon} />
+          {selectedDept}
+          <span style={styles.arrow}>◀</span>
         </button>
         {deptOpen && (
           <div style={styles.dropdown}>
             {DEPARTMENTS.map(d => (
               <div key={d} style={styles.dropdownItem}
-                onClick={() => { setSelectedDept(d); setDeptOpen(false); }}>
+                onClick={() => handleDeptSelect(d)}>
                 {d}
               </div>
             ))}
@@ -131,6 +151,15 @@ const styles = {
   },
   icon: {
     fontSize: '13px',
+  },
+  filterIcon: {
+    width: '14px',
+    height: '14px',
+    objectFit: 'contain',
+    filter: 'brightness(0) invert(1)',
+  },
+  arrow: {
+    fontSize: '10px',
   },
   dropdownWrap: {
     position: 'relative',
