@@ -26,6 +26,13 @@ function getDepartmentDisplay(departments) {
   return depts.map(d => DEPT_ACRONYMS[d] || d).join(', ');
 }
 
+function getFullDepartmentDisplay(departments) {
+  if (!departments) return 'Open for all';
+  const depts = departments.split('|').map(d => d.trim());
+  if (depts.length === 6) return 'Open for all';
+  return depts.join(', ');
+}
+
 function getPaymentDisplay(event) {
   if (!event.categoriesEnabled) return 'Free';
   try {
@@ -35,6 +42,18 @@ function getPaymentDisplay(event) {
     return 'Varies';
   } catch {
     return 'Free';
+  }
+}
+
+function getPriceDisplay(event) {
+  if (!event.categoriesEnabled) return { type: 'single', value: 'Free' };
+  try {
+    const cats = JSON.parse(event.categories || '[]');
+    if (cats.length === 0) return { type: 'single', value: 'Free' };
+    if (cats.length === 1) return { type: 'single', value: `P ${cats[0].price}` };
+    return { type: 'multiple', value: cats };
+  } catch {
+    return { type: 'single', value: 'Free' };
   }
 }
 
@@ -55,7 +74,21 @@ function formatDateTime(dateTimeStr) {
   });
 }
 
-function EventCard({ event }) {
+function applyFilters(events, selectedMonth, selectedDept) {
+  return events.filter(event => {
+    if (selectedMonth && selectedMonth !== 'Month') {
+      const eventMonth = MONTHS[new Date(event.eventDateTime).getMonth()];
+      if (eventMonth !== selectedMonth) return false;
+    }
+    if (selectedDept && selectedDept !== 'Department' && selectedDept !== 'All Departments') {
+      const depts = (event.departments || '').split('|').map(d => d.trim());
+      if (!depts.includes(selectedDept)) return false;
+    }
+    return true;
+  });
+}
+
+function EventCard({ event, onViewDetails }) {
   const status = event.status;
   const paymentDisplay = getPaymentDisplay(event);
   const deptDisplay = getDepartmentDisplay(event.departments);
@@ -89,29 +122,11 @@ function EventCard({ event }) {
         </div>
         <div style={styles.cardBottom}>
           <span style={styles.cardMeta}>{event.venue} &nbsp; {formatDateTime(event.eventDateTime)}</span>
-          <span style={styles.viewDetails}>View Details</span>
+          <span style={styles.viewDetails} onClick={onViewDetails}>View Details</span>
         </div>
       </div>
     </div>
   );
-}
-
-function applyFilters(events, selectedMonth, selectedDept) {
-  return events.filter(event => {
-    // Month filter
-    if (selectedMonth && selectedMonth !== 'Month') {
-      const eventMonth = MONTHS[new Date(event.eventDateTime).getMonth()];
-      if (eventMonth !== selectedMonth) return false;
-    }
-
-    // Department filter
-    if (selectedDept && selectedDept !== 'Department' && selectedDept !== 'All Departments') {
-      const depts = (event.departments || '').split('|').map(d => d.trim());
-      if (!depts.includes(selectedDept)) return false;
-    }
-
-    return true;
-  });
 }
 
 export default function OrganizerDashboard() {
@@ -125,6 +140,7 @@ export default function OrganizerDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState('Month');
   const [selectedDept, setSelectedDept] = useState('Department');
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   useEffect(() => {
     fetchEvents();
@@ -135,7 +151,6 @@ export default function OrganizerDashboard() {
     try {
       const res = await getMyEvents(token);
       if (res.data.success) setEvents(res.data.data);
-
       const archRes = await getMyArchivedEvents(token);
       if (archRes.data.success) setArchivedEvents(archRes.data.data);
     } catch (err) {
@@ -168,7 +183,13 @@ export default function OrganizerDashboard() {
         if (activeEvents.length === 0) return <p style={styles.emptyText}>No events found for the selected filter.</p>;
         return (
           <div style={styles.eventsGrid}>
-            {activeEvents.map(event => <EventCard key={event.id} event={event} />)}
+            {activeEvents.map(event => (
+              <EventCard
+                key={event.id}
+                event={event}
+                onViewDetails={() => setSelectedEvent(event)}
+              />
+            ))}
           </div>
         );
       case 'archive':
@@ -176,13 +197,21 @@ export default function OrganizerDashboard() {
         if (filteredArchived.length === 0) return <p style={styles.emptyText}>No archived events found.</p>;
         return (
           <div style={styles.eventsGrid}>
-            {filteredArchived.map(event => <EventCard key={event.id} event={event} />)}
+            {filteredArchived.map(event => (
+              <EventCard
+                key={event.id}
+                event={event}
+                onViewDetails={() => setSelectedEvent(event)}
+              />
+            ))}
           </div>
         );
       default:
         return null;
     }
   };
+
+  const priceInfo = selectedEvent ? getPriceDisplay(selectedEvent) : null;
 
   return (
     <div style={styles.page}>
@@ -207,6 +236,88 @@ export default function OrganizerDashboard() {
         />
         {renderContent()}
       </div>
+
+      {/* View Details Modal */}
+      {selectedEvent && (
+        <div style={styles.modalOverlay} onClick={() => setSelectedEvent(null)}>
+          <div style={styles.detailsModal} onClick={(e) => e.stopPropagation()}>
+
+            {/* Header */}
+            <div style={styles.detailsHeader}>
+              <span style={styles.detailsHeaderTitle}>EVENT DETAILS</span>
+              <button style={styles.detailsCloseBtn} onClick={() => setSelectedEvent(null)}>✕</button>
+            </div>
+
+            {/* Picture */}
+            <div style={styles.detailsPicture}>
+              <img
+                src={selectedEvent.picture || defaultEventImg}
+                alt={selectedEvent.eventName}
+                style={styles.detailsPictureImg}
+              />
+            </div>
+
+            {/* Title row */}
+            <div style={styles.detailsTitleRow}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1, flexWrap: 'wrap' }}>
+                <span style={styles.detailsEventName}>{selectedEvent.eventName}</span>
+                {priceInfo.type === 'single' && (
+                  <span style={styles.detailsPrice}>{priceInfo.value}</span>
+                )}
+              </div>
+              <button style={styles.editBtn}>Edit Event Details</button>
+            </div>
+
+            {/* Details body */}
+            <div style={styles.detailsBody}>
+              <div style={styles.detailsLeft}>
+                <p style={styles.detailsLine}>
+                  <span style={styles.detailsLabel}>Status: </span>
+                  <span style={{
+                    ...styles.statusBadgeInline,
+                    backgroundColor: selectedEvent.status === 'ONGOING' ? '#2ecc71' : '#e74c3c',
+                  }}>{selectedEvent.status}</span>
+                </p>
+                <p style={styles.detailsLine}>
+                  <span style={styles.detailsLabel}>Specifics: </span>
+                  {getFullDepartmentDisplay(selectedEvent.departments)}
+                </p>
+                {(selectedEvent.gcashEnabled || selectedEvent.onsiteEnabled) && (
+                  <p style={styles.detailsLine}>
+                    <span style={styles.detailsLabel}>Modes of Payment: </span>
+                    {getPaymentMethods(selectedEvent)}
+                  </p>
+                )}
+                <p style={styles.detailsLine}>
+                  <span style={styles.detailsLabel}>Event Location: </span>
+                  {selectedEvent.venue}
+                </p>
+                <p style={styles.detailsLine}>
+                  <span style={styles.detailsLabel}>Event Date: </span>
+                  {formatDateTime(selectedEvent.eventDateTime)}
+                </p>
+              </div>
+
+              {/* Multiple rates */}
+              {priceInfo.type === 'multiple' && (
+                <div style={styles.detailsRight}>
+                  <p style={styles.detailsLabel}>Rates:</p>
+                  {priceInfo.value.map((cat, i) => (
+                    <p key={i} style={styles.rateItem}>P {cat.price} - {cat.name}</p>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Participants */}
+            <div style={styles.participantsSection}>
+              <h3 style={styles.participantsTitle}>Participants (0)</h3>
+              <p style={styles.noParticipants}>No participants yet.</p>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -304,6 +415,17 @@ const styles = {
     fontFamily: 'Georgia, serif',
     letterSpacing: '0.5px',
   },
+  statusBadgeInline: {
+    color: '#fff',
+    fontSize: '11px',
+    fontWeight: 'bold',
+    padding: '3px 10px',
+    borderRadius: '20px',
+    fontFamily: 'Georgia, serif',
+    letterSpacing: '0.5px',
+    display: 'inline-block',
+    marginLeft: '4px',
+  },
   cardDetails: {
     color: 'rgba(245,240,232,0.85)',
     fontSize: '13px',
@@ -326,5 +448,140 @@ const styles = {
     fontFamily: 'Georgia, serif',
     textDecoration: 'underline',
     cursor: 'pointer',
+  },
+  modalOverlay: {
+    position: 'fixed',
+    top: 0,
+    left: 0,
+    width: '100vw',
+    height: '100vh',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    backdropFilter: 'blur(3px)',
+    zIndex: 999,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  detailsModal: {
+    backgroundColor: '#6b1a1a',
+    borderRadius: '16px',
+    width: '680px',
+    maxWidth: '95vw',
+    maxHeight: '90vh',
+    overflowY: 'auto',
+    padding: '28px 32px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  },
+  detailsHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  detailsHeaderTitle: {
+    color: '#f5f0e8',
+    fontSize: '20px',
+    fontWeight: 'bold',
+    fontFamily: 'Georgia, serif',
+    letterSpacing: '2px',
+  },
+  detailsCloseBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#f5f0e8',
+    fontSize: '22px',
+    cursor: 'pointer',
+  },
+  detailsPicture: {
+    width: '100%',
+    height: '220px',
+    borderRadius: '10px',
+    overflow: 'hidden',
+    backgroundColor: '#d0cdc5',
+  },
+  detailsPictureImg: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
+  detailsTitleRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '12px',
+  },
+  detailsEventName: {
+    color: '#f5f0e8',
+    fontSize: '22px',
+    fontWeight: 'bold',
+    fontFamily: 'Georgia, serif',
+  },
+  detailsPrice: {
+    color: '#f5f0e8',
+    fontSize: '18px',
+    fontFamily: 'Georgia, serif',
+  },
+  editBtn: {
+    backgroundColor: 'rgba(245,240,232,0.2)',
+    color: '#f5f0e8',
+    border: '1px solid rgba(245,240,232,0.4)',
+    borderRadius: '8px',
+    padding: '8px 16px',
+    fontSize: '13px',
+    fontFamily: 'Georgia, serif',
+    cursor: 'pointer',
+  },
+  detailsBody: {
+    display: 'flex',
+    gap: '32px',
+    flexWrap: 'wrap',
+  },
+  detailsLeft: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  },
+  detailsRight: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+    minWidth: '140px',
+  },
+  detailsLine: {
+    color: '#f5f0e8',
+    fontSize: '14px',
+    fontFamily: 'Georgia, serif',
+    margin: 0,
+  },
+  detailsLabel: {
+    fontWeight: 'bold',
+    color: '#f5f0e8',
+    fontFamily: 'Georgia, serif',
+    fontSize: '14px',
+  },
+  rateItem: {
+    color: '#f5f0e8',
+    fontSize: '14px',
+    fontFamily: 'Georgia, serif',
+    margin: '2px 0',
+  },
+  participantsSection: {
+    borderTop: '1px solid rgba(245,240,232,0.2)',
+    paddingTop: '16px',
+  },
+  participantsTitle: {
+    color: '#f5f0e8',
+    fontSize: '18px',
+    fontFamily: 'Georgia, serif',
+    margin: '0 0 12px 0',
+  },
+  noParticipants: {
+    color: 'rgba(245,240,232,0.5)',
+    fontSize: '14px',
+    fontFamily: 'Georgia, serif',
+    margin: 0,
   },
 };
