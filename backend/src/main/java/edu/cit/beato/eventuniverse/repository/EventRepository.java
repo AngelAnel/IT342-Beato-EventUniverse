@@ -10,4 +10,5 @@ import java.util.UUID;
 public interface EventRepository extends JpaRepository<Event, UUID> {
     List<Event> findByOrganizerAndArchivedFalse(User organizer);
     List<Event> findByOrganizerAndArchivedTrue(User organizer);
+    List<Event> findByArchivedFalse();
 }

@@ -199,6 +199,69 @@ public class EventController {
         }
     }
 
+    // GET /api/v1/events/participant — get events for participant's department
+    @GetMapping("/participant")
+    public ResponseEntity<Map<String, Object>> getParticipantEvents(
+            @RequestHeader("Authorization") String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            User participant = getUserFromToken(authHeader);
+            if (participant == null) {
+                response.put("success", false);
+                response.put("message", "Unauthorized");
+                return ResponseEntity.status(401).body(response);
+            }
+
+            String participantDept = participant.getDepartment();
+
+            List<Event> allEvents = eventRepository.findByArchivedFalse();
+            List<Map<String, Object>> eventList = new ArrayList<>();
+
+            for (Event event : allEvents) {
+                // Auto-archive past events
+                if (event.getEventDateTime().isBefore(LocalDateTime.now())) {
+                    event.setArchived(true);
+                    eventRepository.save(event);
+                    continue;
+                }
+
+                // Check if participant's department is included
+                String depts = event.getDepartments();
+                if (depts == null) continue;
+
+                String[] deptArray = depts.split("\\|");
+                boolean included = false;
+                if (deptArray.length == 6) {
+                    included = true; // Open for all
+                } else {
+                    for (String d : deptArray) {
+                        if (d.trim().equals(participantDept)) {
+                            included = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (included) {
+                    Map<String, Object> eventMap = buildEventMap(event);
+                    // Add organizer name
+                    eventMap.put("organizerName", event.getOrganizer().getFirstName());
+                    eventList.add(eventMap);
+                }
+            }
+
+            response.put("success", true);
+            response.put("data", eventList);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Something went wrong: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
     // PUT /api/v1/events/{id} — edit event
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, Object>> updateEvent(
