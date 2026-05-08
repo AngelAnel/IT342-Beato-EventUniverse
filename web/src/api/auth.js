@@ -40,3 +40,23 @@ export const getMyArchivedEvents = (token) =>
   axios.get('http://localhost:8080/api/v1/events/my/archived', {
     headers: { Authorization: `Bearer ${token}` },
   });
+
+  export const getParticipantEvents = (token) =>
+  axios.get('http://localhost:8080/api/v1/events/participant', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  export const submitRegistration = (data, token) =>
+  axios.post('http://localhost:8080/api/v1/registrations', data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getSlotCounts = (eventId, token) =>
+  axios.get(`http://localhost:8080/api/v1/registrations/event/${eventId}/slot-counts`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getMyRegistrations = (token) =>
+  axios.get('http://localhost:8080/api/v1/registrations/my', {
+    headers: { Authorization: `Bearer ${token}` },
+  });

@@ -95,26 +95,28 @@ export default function DashboardNav({ role, activePage, onPageChange, onFilterC
         )}
       </div>
 
-      {/* Department filter */}
-      <div style={styles.dropdownWrap}>
-        <button
-          style={styles.navBtn}
-          onClick={() => { setDeptOpen(!deptOpen); setMonthOpen(false); }}>
-          <img src={filterIcon} alt="filter" style={styles.filterIcon} />
-          {selectedDept}
-          <span style={styles.arrow}>◀</span>
-        </button>
-        {deptOpen && (
-          <div style={styles.dropdown}>
-            {DEPARTMENTS.map(d => (
-              <div key={d} style={styles.dropdownItem}
-                onClick={() => handleDeptSelect(d)}>
-                {d}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Department filter — organizer only */}
+          {role === 'Organization' && (
+            <div style={styles.dropdownWrap}>
+              <button
+                style={styles.navBtn}
+                onClick={() => { setDeptOpen(!deptOpen); setMonthOpen(false); }}>
+                <img src={filterIcon} alt="filter" style={styles.filterIcon} />
+                {selectedDept}
+                <span style={styles.arrow}>◀</span>
+              </button>
+              {deptOpen && (
+                <div style={styles.dropdown}>
+                  {DEPARTMENTS.map(d => (
+                    <div key={d} style={styles.dropdownItem}
+                      onClick={() => handleDeptSelect(d)}>
+                      {d}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
     </div>
   );
