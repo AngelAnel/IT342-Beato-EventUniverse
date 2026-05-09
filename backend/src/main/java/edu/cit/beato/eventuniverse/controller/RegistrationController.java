@@ -9,7 +9,9 @@ import edu.cit.beato.eventuniverse.repository.RegistrationRepository;
 import edu.cit.beato.eventuniverse.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import edu.cit.beato.eventuniverse.model.Notification;
+import edu.cit.beato.eventuniverse.repository.NotificationRepository;
+import edu.cit.beato.eventuniverse.service.EmailService;
 import java.util.*;
 
 @RestController
@@ -21,14 +23,21 @@ public class RegistrationController {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
+    private final NotificationRepository notificationRepository;
+    private final EmailService emailService;
+
     public RegistrationController(RegistrationRepository registrationRepository,
                                   EventRepository eventRepository,
                                   UserRepository userRepository,
-                                  JwtUtil jwtUtil) {
+                                  JwtUtil jwtUtil,
+                                  NotificationRepository notificationRepository,
+                                  EmailService emailService) {
         this.registrationRepository = registrationRepository;
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
+        this.notificationRepository = notificationRepository;
+        this.emailService = emailService;
     }
 
     private User getUserFromToken(String authHeader) {
@@ -182,6 +191,169 @@ public class RegistrationController {
                 map.put("paymentMethod", reg.getPaymentMethod());
                 map.put("status", reg.getStatus());
                 map.put("createdAt", reg.getCreatedAt());
+                list.add(map);
+            }
+
+            response.put("success", true);
+            response.put("data", list);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Something went wrong: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    // GET /api/v1/registrations/event/{eventId} — get all registrations for an event (organizer)
+    @GetMapping("/event/{eventId}")
+    public ResponseEntity<Map<String, Object>> getEventRegistrations(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable UUID eventId) {
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            User organizer = getUserFromToken(authHeader);
+            if (organizer == null) {
+                response.put("success", false);
+                response.put("message", "Unauthorized");
+                return ResponseEntity.status(401).body(response);
+            }
+
+            Event event = eventRepository.findById(eventId).orElse(null);
+            if (event == null) {
+                response.put("success", false);
+                response.put("message", "Event not found");
+                return ResponseEntity.status(404).body(response);
+            }
+
+            List<Registration> registrations = registrationRepository.findByEvent(event);
+            List<Map<String, Object>> list = new ArrayList<>();
+
+            for (Registration reg : registrations) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", reg.getId());
+                map.put("participantId", reg.getParticipant().getId());
+                map.put("participantName", reg.getParticipant().getFirstName() + " " + reg.getParticipant().getLastName());
+                map.put("participantEmail", reg.getParticipant().getEmail());
+                map.put("categoryName", reg.getCategoryName());
+                map.put("categoryPrice", reg.getCategoryPrice());
+                map.put("paymentMethod", reg.getPaymentMethod());
+                map.put("status", reg.getStatus());
+                map.put("createdAt", reg.getCreatedAt());
+                list.add(map);
+            }
+
+            response.put("success", true);
+            response.put("data", list);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Something went wrong: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    // PUT /api/v1/registrations/{id}/confirm — confirm a registration
+    @PutMapping("/{id}/confirm")
+    public ResponseEntity<Map<String, Object>> confirmRegistration(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable UUID id) {
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            User organizer = getUserFromToken(authHeader);
+            if (organizer == null) {
+                response.put("success", false);
+                response.put("message", "Unauthorized");
+                return ResponseEntity.status(401).body(response);
+            }
+
+            Registration registration = registrationRepository.findById(id).orElse(null);
+            if (registration == null) {
+                response.put("success", false);
+                response.put("message", "Registration not found");
+                return ResponseEntity.status(404).body(response);
+            }
+
+            // Update status
+            registration.setStatus("Confirmed");
+            registrationRepository.save(registration);
+
+            // Create notification
+            Notification notification = new Notification();
+            notification.setUser(registration.getParticipant());
+            notification.setTitle(registration.getEvent().getEventName());
+            notification.setMessage(organizer.getFirstName() + " have confirmed your registration!");
+            notificationRepository.save(notification);
+
+            // Send email
+            String participantName = registration.getParticipant().getFirstName()
+                    + " " + registration.getParticipant().getLastName();
+            String eventDateTime = registration.getEvent().getEventDateTime().toString();
+            String registrationTime = registration.getCreatedAt().toString();
+
+            emailService.sendRegistrationConfirmation(
+                    registration.getParticipant().getEmail(),
+                    participantName,
+                    registration.getEvent().getEventName(),
+                    organizer.getFirstName(),
+                    eventDateTime,
+                    registration.getEvent().getVenue(),
+                    registration.getCategoryName(),
+                    registration.getCategoryPrice(),
+                    registration.getPaymentMethod(),
+                    registrationTime
+            );
+
+            response.put("success", true);
+            response.put("message", "Registration confirmed");
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Something went wrong: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    // GET /api/v1/registrations/my/confirmed — get confirmed registrations for participant
+    @GetMapping("/my/confirmed")
+    public ResponseEntity<Map<String, Object>> getMyConfirmedRegistrations(
+            @RequestHeader("Authorization") String authHeader) {
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            User participant = getUserFromToken(authHeader);
+            if (participant == null) {
+                response.put("success", false);
+                response.put("message", "Unauthorized");
+                return ResponseEntity.status(401).body(response);
+            }
+
+            List<Registration> registrations = registrationRepository.findByParticipant(participant);
+            List<Map<String, Object>> list = new ArrayList<>();
+
+            for (Registration reg : registrations) {
+                if (!"Confirmed".equals(reg.getStatus())) continue;
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", reg.getId());
+                map.put("eventId", reg.getEvent().getId());
+                map.put("eventName", reg.getEvent().getEventName());
+                map.put("eventDateTime", reg.getEvent().getEventDateTime());
+                map.put("venue", reg.getEvent().getVenue());
+                map.put("picture", reg.getEvent().getPicture());
+                map.put("departments", reg.getEvent().getDepartments());
+                map.put("categoriesEnabled", reg.getEvent().isCategoriesEnabled());
+                map.put("categories", reg.getEvent().getCategories());
+                map.put("gcashEnabled", reg.getEvent().isGcashEnabled());
+                map.put("onsiteEnabled", reg.getEvent().isOnsiteEnabled());
+                map.put("organizerName", reg.getEvent().getOrganizer().getFirstName());
+                map.put("status", reg.getStatus());
+                map.put("categoryName", reg.getCategoryName());
+                map.put("categoryPrice", reg.getCategoryPrice());
+                map.put("paymentMethod", reg.getPaymentMethod());
                 list.add(map);
             }
 
