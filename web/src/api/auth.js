@@ -85,3 +85,8 @@ export const markNotificationsRead = (token) =>
   axios.put('http://localhost:8080/api/v1/notifications/mark-read', {}, {
     headers: { Authorization: `Bearer ${token}` },
   });
+
+  export const getMyArchivedRegistrations = (token) =>
+  axios.get('http://localhost:8080/api/v1/registrations/my/archived', {
+    headers: { Authorization: `Bearer ${token}` },
+  });

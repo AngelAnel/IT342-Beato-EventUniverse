@@ -55,11 +55,19 @@ function formatDateTime(dateTimeStr) {
   });
 }
 
-function applyFilters(events, selectedMonth) {
+function applyFilters(events, selectedMonth, searchQuery) {
   return events.filter(event => {
     if (selectedMonth && selectedMonth !== 'Month') {
       const eventMonth = MONTHS[new Date(event.eventDateTime).getMonth()];
       if (eventMonth !== selectedMonth) return false;
+    }
+    if (searchQuery && searchQuery.trim() !== '') {
+      const q = searchQuery.toLowerCase();
+      const matchesName = event.eventName?.toLowerCase().includes(q);
+      const matchesVenue = event.venue?.toLowerCase().includes(q);
+      const matchesDept = event.departments?.toLowerCase().includes(q);
+      const matchesOrganizer = event.organizerName?.toLowerCase().includes(q);
+      if (!matchesName && !matchesVenue && !matchesDept && !matchesOrganizer) return false;
     }
     return true;
   });
@@ -676,7 +684,7 @@ export default function ParticipantDashboard() {
   const handleFilterChange = ({ month }) => setSelectedMonth(month);
 
   const renderContent = () => {
-    const filteredEvents = applyFilters(events, selectedMonth);
+    const filteredEvents = applyFilters(events, selectedMonth, searchQuery);
     switch (activePage) {
       case 'home':
         if (loading) return <p style={styles.emptyText}>Loading events...</p>;
@@ -712,7 +720,13 @@ export default function ParticipantDashboard() {
 
   return (
     <div style={styles.page}>
-      <Navbar onSearch={(q) => setSearchQuery(q)} />
+          <Navbar
+              onSearch={(q) => setSearchQuery(q)} searchQuery={searchQuery}
+              onNotificationClick={(notif) => {
+                const event = myEvents.find(e => e.eventId === notif.eventId);
+                if (event) setSelectedMyEvent(event);
+              }}
+            />
       <div style={styles.body}>
         {activePage === 'home' && (
           <h1 style={styles.welcome}>Hello there, {user?.firstName} {user?.lastName}! Welcome Back</h1>

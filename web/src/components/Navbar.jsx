@@ -3,7 +3,7 @@ import logoWhite from '../assets/logo-nobg-whitever.png';
 import { useState, useEffect, useRef } from 'react';
 import { getNotifications, markNotificationsRead } from '../api/auth';
 
-export default function Navbar({ onSearch }) {
+export default function Navbar({ onSearch, onNotificationClick }) {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user'));
   const token = localStorage.getItem('token');
@@ -20,12 +20,11 @@ export default function Navbar({ onSearch }) {
     : `${user?.firstName} ${user?.lastName}`;
 
   useEffect(() => {
-    if (token && user?.role === 'Participant') {
-      fetchNotifications();
-      // Poll every 30 seconds for new notifications
-      const interval = setInterval(fetchNotifications, 30000);
-      return () => clearInterval(interval);
-    }
+  if (token) {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => clearInterval(interval);
+  }
   }, []);
 
   const fetchNotifications = async () => {
@@ -100,13 +99,16 @@ export default function Navbar({ onSearch }) {
 
         <div style={styles.searchWrap}>
           <input
-            type="text"
-            placeholder="Search event..."
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={handleKeyDown}
-            style={styles.searchInput}
-          />
+              type="text"
+              placeholder="Search event..."
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                if (onSearch) onSearch(e.target.value);
+              }}
+              onKeyDown={handleKeyDown}
+              style={styles.searchInput}
+            />
           <button onClick={handleSearch} style={styles.searchBtn}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b1a1a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8" />
@@ -138,17 +140,24 @@ export default function Navbar({ onSearch }) {
                   <p style={styles.notifEmpty}>No notifications yet</p>
                 ) : (
                   notifications.map((notif, index) => (
-                    <div key={index} style={{
-                      ...styles.notifItem,
-                      backgroundColor: notif.read ? '#fff' : '#fef9e7',
-                    }}>
-                      <div style={styles.notifItemTop}>
-                        <span style={styles.notifTitle}>{notif.title}</span>
-                        <span style={styles.notifTime}>{formatTimeAgo(notif.createdAt)}</span>
+                      <div key={index} style={{
+                        ...styles.notifItem,
+                        backgroundColor: notif.read ? '#fff' : '#fef9e7',
+                        cursor: notif.eventId ? 'pointer' : 'default',
+                      }}
+                        onClick={() => {
+                          if (!notif.eventId) return;
+                          setShowNotifications(false);
+                          if (onNotificationClick) onNotificationClick(notif);
+                        }}
+                      >
+                        <div style={styles.notifItemTop}>
+                          <span style={styles.notifTitle}>{notif.title}</span>
+                          <span style={styles.notifTime}>{formatTimeAgo(notif.createdAt)}</span>
+                        </div>
+                        <p style={styles.notifMessage}>{notif.message}</p>
                       </div>
-                      <p style={styles.notifMessage}>{notif.message}</p>
-                    </div>
-                  ))
+                    ))
                 )}
               </div>
             )}

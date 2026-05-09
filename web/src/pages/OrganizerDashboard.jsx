@@ -74,7 +74,7 @@ function formatDateTime(dateTimeStr) {
   });
 }
 
-function applyFilters(events, selectedMonth, selectedDept) {
+function applyFilters(events, selectedMonth, selectedDept, searchQuery) {
   return events.filter(event => {
     if (selectedMonth && selectedMonth !== 'Month') {
       const eventMonth = MONTHS[new Date(event.eventDateTime).getMonth()];
@@ -83,6 +83,13 @@ function applyFilters(events, selectedMonth, selectedDept) {
     if (selectedDept && selectedDept !== 'Department' && selectedDept !== 'All Departments') {
       const depts = (event.departments || '').split('|').map(d => d.trim());
       if (!depts.includes(selectedDept)) return false;
+    }
+    if (searchQuery && searchQuery.trim() !== '') {
+      const q = searchQuery.toLowerCase();
+      const matchesName = event.eventName?.toLowerCase().includes(q);
+      const matchesVenue = event.venue?.toLowerCase().includes(q);
+      const matchesDept = event.departments?.toLowerCase().includes(q);
+      if (!matchesName && !matchesVenue && !matchesDept) return false;
     }
     return true;
   });
@@ -188,8 +195,8 @@ export default function OrganizerDashboard() {
     };
 
   const renderContent = () => {
-    const activeEvents = applyFilters(events, selectedMonth, selectedDept);
-    const filteredArchived = applyFilters(archivedEvents, selectedMonth, selectedDept);
+    const activeEvents = applyFilters(events, selectedMonth, selectedDept, searchQuery);
+    const filteredArchived = applyFilters(archivedEvents, selectedMonth, selectedDept, searchQuery);
 
     switch (activePage) {
       case 'home':
@@ -235,7 +242,17 @@ export default function OrganizerDashboard() {
 
   return (
     <div style={styles.page}>
-      <Navbar onSearch={(q) => setSearchQuery(q)} />
+      <Navbar
+          onSearch={(q) => setSearchQuery(q)} searchQuery={searchQuery}
+          onNotificationClick={(notif) => {
+            const event = events.find(e => e.id === notif.eventId)
+              || archivedEvents.find(e => e.id === notif.eventId);
+            if (event) {
+              setSelectedEvent(event);
+              fetchRegistrations(event.id);
+            }
+          }}
+        />
       <div style={styles.body}>
         {activePage === 'home' && (
           <h1 style={styles.welcome}>
