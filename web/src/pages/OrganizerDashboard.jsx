@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import DashboardNav from '../components/DashboardNav';
-import { getMyEvents, getMyArchivedEvents } from '../api/auth';
 import defaultEventImg from '../assets/default-event.png';
+import { getMyEvents, getMyArchivedEvents, getEventRegistrations, confirmRegistration } from '../api/auth';
 
 const DEPT_ACRONYMS = {
   'College of Engineering and Architecture': 'CEA',
@@ -141,6 +141,8 @@ export default function OrganizerDashboard() {
   const [selectedMonth, setSelectedMonth] = useState('Month');
   const [selectedDept, setSelectedDept] = useState('Department');
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const [eventRegistrations, setEventRegistrations] = useState([]);
+  const [loadingRegistrations, setLoadingRegistrations] = useState(false);
 
   useEffect(() => {
     fetchEvents();
@@ -172,6 +174,18 @@ export default function OrganizerDashboard() {
     }
     setActivePage(page);
   };
+  
+  const fetchRegistrations = async (eventId) => {
+  setLoadingRegistrations(true);
+      try {
+        const res = await getEventRegistrations(eventId, token);
+        if (res.data.success) setEventRegistrations(res.data.data);
+      } catch (err) {
+        console.error('Failed to fetch registrations', err);
+      } finally {
+        setLoadingRegistrations(false);
+      }
+    };
 
   const renderContent = () => {
     const activeEvents = applyFilters(events, selectedMonth, selectedDept);
@@ -187,7 +201,10 @@ export default function OrganizerDashboard() {
               <EventCard
                 key={event.id}
                 event={event}
-                onViewDetails={() => setSelectedEvent(event)}
+                onViewDetails={() => {
+                  setSelectedEvent(event);
+                  fetchRegistrations(event.id);
+                }}
               />
             ))}
           </div>
@@ -201,7 +218,10 @@ export default function OrganizerDashboard() {
               <EventCard
                 key={event.id}
                 event={event}
-                onViewDetails={() => setSelectedEvent(event)}
+                onViewDetails={() => {
+                  setSelectedEvent(event);
+                  fetchRegistrations(event.id);
+                }}
               />
             ))}
           </div>
@@ -310,10 +330,47 @@ export default function OrganizerDashboard() {
             </div>
 
             {/* Participants */}
-            <div style={styles.participantsSection}>
-              <h3 style={styles.participantsTitle}>Participants (0)</h3>
-              <p style={styles.noParticipants}>No participants yet.</p>
-            </div>
+              <div style={styles.participantsSection}>
+                <h3 style={styles.participantsTitle}>
+                  Participants ({loadingRegistrations ? '...' : eventRegistrations.length})
+                </h3>
+                {loadingRegistrations ? (
+                  <p style={styles.noParticipants}>Loading participants...</p>
+                ) : eventRegistrations.length === 0 ? (
+                  <p style={styles.noParticipants}>No participants yet.</p>
+                ) : (
+                  eventRegistrations.map((reg, index) => (
+                    <div key={index} style={styles.participantRow}>
+                      <span style={styles.participantName}>{reg.participantName}</span>
+                      <div style={styles.participantBtns}>
+                        <button
+                          style={{
+                            ...styles.statusBtn,
+                            backgroundColor: reg.status === 'Confirmed' ? '#2ecc71' : '#b0a090',
+                            cursor: reg.status === 'Confirmed' ? 'default' : 'pointer',
+                          }}
+                          onClick={async () => {
+                            if (reg.status === 'Confirmed') return;
+                            try {
+                              const res = await confirmRegistration(reg.id, token);
+                              if (res.data.success) {
+                                setEventRegistrations(prev =>
+                                  prev.map(r => r.id === reg.id ? { ...r, status: 'Confirmed' } : r)
+                                );
+                              }
+                            } catch (err) {
+                              console.error('Failed to confirm', err);
+                            }
+                          }}
+                        >
+                          {reg.status === 'Confirmed' ? 'Confirmed' : 'Pending'}
+                        </button>
+                        <button style={styles.viewDetailsSmallBtn}>View Details</button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
 
           </div>
         </div>
@@ -584,4 +641,44 @@ const styles = {
     fontFamily: 'Georgia, serif',
     margin: 0,
   },
+  participantRow: {
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  backgroundColor: '#f5f0e8',
+  borderRadius: '8px',
+  padding: '10px 16px',
+  marginBottom: '8px',
+},
+participantName: {
+  color: '#3d2b2b',
+  fontSize: '14px',
+  fontFamily: 'Georgia, serif',
+  fontWeight: 'bold',
+  flex: 1,
+},
+participantBtns: {
+  display: 'flex',
+  gap: '8px',
+  alignItems: 'center',
+},
+statusBtn: {
+  color: '#fff',
+  border: 'none',
+  borderRadius: '20px',
+  padding: '4px 14px',
+  fontSize: '12px',
+  fontFamily: 'Georgia, serif',
+  fontWeight: 'bold',
+},
+viewDetailsSmallBtn: {
+  backgroundColor: 'rgba(107,26,26,0.15)',
+  color: '#6b1a1a',
+  border: '1px solid #6b1a1a',
+  borderRadius: '20px',
+  padding: '4px 14px',
+  fontSize: '12px',
+  fontFamily: 'Georgia, serif',
+  cursor: 'pointer',
+},
 };

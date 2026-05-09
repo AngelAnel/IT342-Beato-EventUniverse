@@ -2,8 +2,10 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import DashboardNav from '../components/DashboardNav';
-import { getParticipantEvents, getSlotCounts, submitRegistration } from '../api/auth';
 import defaultEventImg from '../assets/default-event.png';
+import { getParticipantEvents, getSlotCounts, submitRegistration, getMyConfirmedRegistrations } from '../api/auth';
+
+
 
 const DEPT_ACRONYMS = {
   'College of Engineering and Architecture': 'CEA',
@@ -63,7 +65,7 @@ function applyFilters(events, selectedMonth) {
   });
 }
 
-function EventCard({ event, onRegister }) {
+function EventCard({ event, onRegister, isRegistered }) {
   const paymentDisplay = getPaymentDisplay(event);
   const deptDisplay = getDepartmentDisplay(event.departments);
   const paymentMethods = getPaymentMethods(event);
@@ -87,7 +89,10 @@ function EventCard({ event, onRegister }) {
         </div>
         <div style={styles.cardBottom}>
           <span style={styles.cardMeta}>{event.venue} &nbsp; {formatDateTime(event.eventDateTime)}</span>
-          <span style={styles.registerBtn} onClick={() => onRegister(event)}>Register</span>
+          {isRegistered
+            ? <span style={styles.registeredBtn}>Registered</span>
+            : <span style={styles.registerBtn} onClick={() => onRegister(event)}>Register</span>
+          }
         </div>
       </div>
     </div>
@@ -111,6 +116,7 @@ function RegisterModal({ event, token, onClose }) {
   const [warning, setWarning] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [slotsFull, setSlotsFull] = useState(false);
 
   const categories = (() => {
     try { return JSON.parse(event.categories || '[]'); }
@@ -154,21 +160,42 @@ function RegisterModal({ event, token, onClose }) {
   }, []);
 
   const fetchSlotCounts = async () => {
-    setLoadingSlots(true);
-    try {
-      const res = await getSlotCounts(event.id, token);
-      if (res.data.success) {
-        setSlotCounts(res.data.data.counts || {});
-        setAlreadyRegistered(res.data.data.alreadyRegistered || false);
-        const counts = res.data.data.counts || {};
-        setTotalRegistered(Object.values(counts).reduce((a, b) => a + b, 0));
+  setLoadingSlots(true);
+  try {
+    const res = await getSlotCounts(event.id, token);
+    if (res.data.success) {
+      const counts = res.data.data.counts || {};
+      setSlotCounts(counts);
+      setAlreadyRegistered(res.data.data.alreadyRegistered || false);
+      const total = Object.values(counts).reduce((a, b) => a + b, 0);
+      setTotalRegistered(total);
+
+      // Check if slots are full
+      if (hasMaxParticipants && event.maxParticipants) {
+        if (total >= parseInt(event.maxParticipants)) {
+          setSlotsFull(true);
+        }
       }
-    } catch (err) {
-      console.error('Failed to fetch slot counts', err);
-    } finally {
-      setLoadingSlots(false);
+
+      // Check if all categories are full
+      if (hasCategories) {
+        const cats = (() => {
+          try { return JSON.parse(event.categories || '[]'); }
+          catch { return []; }
+        })();
+        const allFull = cats.every(cat => {
+            if (!cat.slots) return false; 
+            return (counts[cat.name] || 0) >= parseInt(cat.slots);
+          });
+        if (allFull) setSlotsFull(true);
+      }
     }
-  };
+  } catch (err) {
+    console.error('Failed to fetch slot counts', err);
+  } finally {
+    setLoadingSlots(false);
+  }
+};
 
   const handleProofUpload = (e) => {
     const file = e.target.files[0];
@@ -283,6 +310,24 @@ function RegisterModal({ event, token, onClose }) {
     );
   }
 
+  if (slotsFull) {
+  return (
+    <div style={styles.modalOverlay} onClick={onClose}>
+      <div style={styles.regPanel} onClick={e => e.stopPropagation()}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button style={styles.regCloseBtn} onClick={onClose}>✕</button>
+        </div>
+        <p style={{ color: '#ffcccc', fontSize: '18px', fontFamily: 'Georgia, serif', textAlign: 'center', marginTop: '32px' }}>
+          Sorry, this event is already full.
+        </p>
+        <p style={{ color: 'rgba(245,240,232,0.6)', fontSize: '13px', fontFamily: 'Georgia, serif', textAlign: 'center' }}>
+          No more slots are available for registration.
+        </p>
+      </div>
+    </div>
+  );
+}
+
   return (
     <>
       <div style={styles.modalOverlay} onClick={onClose}>
@@ -323,7 +368,7 @@ function RegisterModal({ event, token, onClose }) {
                 ) : (
                   categories.map((cat, i) => {
                     const taken = slotCounts[cat.name] || 0;
-                    const totalSlots = parseInt(cat.slots);
+                    const totalSlots = cat.slots ? parseInt(cat.slots) : null;
                     const isSelected = selectedCategory?.name === cat.name;
                     return (
                       <div
@@ -337,7 +382,9 @@ function RegisterModal({ event, token, onClose }) {
                         onClick={() => { setSelectedCategory(cat); setWarning(''); }}
                       >
                         <span style={styles.catName}>{cat.name}</span>
-                        <span style={styles.catSlots}>{taken}/{totalSlots}</span>
+                        <span style={styles.catSlots}>
+                          {taken}/{totalSlots !== null ? totalSlots : '∞'}
+                        </span>
                         <span style={styles.catPrice}>P {cat.price}</span>
                       </div>
                     );
@@ -544,7 +591,41 @@ function RegisterModal({ event, token, onClose }) {
   );
 }
 
+function MyEventCard({ event, onView }) {
+  const paymentDisplay = getPaymentDisplay(event);
+  const deptDisplay = getDepartmentDisplay(event.departments);
+  const paymentMethods = getPaymentMethods(event);
+
+  return (
+    <div style={styles.card}>
+      <div style={styles.cardPicture}>
+        <img src={event.picture || defaultEventImg} alt={event.eventName} style={styles.cardImg} />
+      </div>
+      <div style={styles.cardInfo}>
+        <div style={styles.cardTitleRow}>
+          <span style={styles.cardTitle}>{event.eventName}</span>
+          <span style={styles.ongoingBadge}>ONGOING</span>
+        </div>
+        <div style={styles.cardOrganizer}>by {event.organizerName}</div>
+        <div style={styles.cardDetails}>
+          {paymentDisplay !== 'Free'
+            ? <span>{paymentDisplay} • {deptDisplay}{paymentMethods ? ` • ${paymentMethods}` : ''}</span>
+            : <span>Free • {deptDisplay}</span>
+          }
+        </div>
+        <div style={styles.cardBottom}>
+          <span style={styles.cardMeta}>{event.venue} &nbsp; {formatDateTime(event.eventDateTime)}</span>
+          <span style={styles.registeredBtn} onClick={onView}>Registered</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function ParticipantDashboard() {
+  const [myEvents, setMyEvents] = useState([]);
+  const [myEventsLoading, setMyEventsLoading] = useState(false);
+  const [selectedMyEvent, setSelectedMyEvent] = useState(null);
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user'));
   const token = localStorage.getItem('token');
@@ -554,9 +635,11 @@ export default function ParticipantDashboard() {
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState('Month');
   const [registerEvent, setRegisterEvent] = useState(null);
+  const [registeredEventIds, setRegisteredEventIds] = useState([]);
 
   useEffect(() => {
     fetchEvents();
+    fetchMyEvents();
   }, []);
 
   const fetchEvents = async () => {
@@ -571,7 +654,25 @@ export default function ParticipantDashboard() {
     }
   };
 
-  const handlePageChange = (page) => setActivePage(page);
+  const fetchMyEvents = async () => {
+  setMyEventsLoading(true);
+      try {
+        const res = await getMyConfirmedRegistrations(token);
+        if (res.data.success) {
+          setMyEvents(res.data.data);
+          setRegisteredEventIds(res.data.data.map(e => e.eventId));
+        }
+      } catch (err) {
+        console.error('Failed to fetch my events', err);
+      } finally {
+        setMyEventsLoading(false);
+      }
+    };
+
+  const handlePageChange = (page) => {
+  setActivePage(page);
+  if (page === 'myevents') fetchMyEvents();
+};
   const handleFilterChange = ({ month }) => setSelectedMonth(month);
 
   const renderContent = () => {
@@ -583,12 +684,25 @@ export default function ParticipantDashboard() {
         return (
           <div style={styles.eventsGrid}>
             {filteredEvents.map(event => (
-              <EventCard key={event.id} event={event} onRegister={(e) => setRegisterEvent(e)} />
-            ))}
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  onRegister={(e) => setRegisterEvent(e)}
+                  isRegistered={registeredEventIds.includes(event.id)}
+                />
+              ))}
           </div>
         );
       case 'myevents':
-        return <p style={styles.emptyText}>You have not registered for any events yet</p>;
+        if (myEventsLoading) return <p style={styles.emptyText}>Loading...</p>;
+        if (myEvents.length === 0) return <p style={styles.emptyText}>You have not registered for any confirmed events yet</p>;
+        return (
+          <div style={styles.eventsGrid}>
+            {myEvents.map(event => (
+              <MyEventCard key={event.id} event={event} onView={() => setSelectedMyEvent(event)} />
+            ))}
+          </div>
+        );
       case 'archive':
         return <p style={styles.emptyText}>No archived events yet</p>;
       default:
@@ -627,6 +741,54 @@ export default function ParticipantDashboard() {
           token={token}
           onClose={() => setRegisterEvent(null)}
         />
+      )}
+      {/* My Event Details Modal */}
+      {selectedMyEvent && (
+        <div style={styles.modalOverlay} onClick={() => setSelectedMyEvent(null)}>
+          <div style={{
+            backgroundColor: '#6b1a1a', borderRadius: '16px', width: '680px',
+            maxWidth: '95vw', maxHeight: '90vh', overflowY: 'auto',
+            padding: '28px 32px', display: 'flex', flexDirection: 'column', gap: '16px',
+          }} onClick={e => e.stopPropagation()}>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ color: '#f5f0e8', fontSize: '20px', fontWeight: 'bold', fontFamily: 'Georgia, serif', letterSpacing: '2px' }}>
+                EVENT DETAILS
+              </span>
+              <button style={{ background: 'none', border: 'none', color: '#f5f0e8', fontSize: '22px', cursor: 'pointer' }}
+                onClick={() => setSelectedMyEvent(null)}>✕</button>
+            </div>
+
+            <div style={{ width: '100%', height: '220px', borderRadius: '10px', overflow: 'hidden', backgroundColor: '#d0cdc5' }}>
+              <img src={selectedMyEvent.picture || defaultEventImg} alt={selectedMyEvent.eventName}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+              <span style={{ color: '#f5f0e8', fontSize: '22px', fontWeight: 'bold', fontFamily: 'Georgia, serif' }}>
+                {selectedMyEvent.eventName}
+              </span>
+              <span style={{ backgroundColor: '#2ecc71', color: '#fff', fontSize: '11px', fontWeight: 'bold', padding: '3px 10px', borderRadius: '20px', fontFamily: 'Georgia, serif' }}>
+                ONGOING
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', gap: '32px', flexWrap: 'wrap' }}>
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <p style={{ color: '#f5f0e8', fontSize: '14px', fontFamily: 'Georgia, serif', margin: 0 }}>
+                  <span style={{ fontWeight: 'bold' }}>Organized by: </span>{selectedMyEvent.organizerName}
+                </p>
+                <p style={{ color: '#f5f0e8', fontSize: '14px', fontFamily: 'Georgia, serif', margin: 0 }}>
+                  <span style={{ fontWeight: 'bold' }}>Venue: </span>{selectedMyEvent.venue}
+                </p>
+                <p style={{ color: '#f5f0e8', fontSize: '14px', fontFamily: 'Georgia, serif', margin: 0 }}>
+                  <span style={{ fontWeight: 'bold' }}>Date: </span>{formatDateTime(selectedMyEvent.eventDateTime)}
+                </p>
+              </div>
+            </div>
+
+          </div>
+        </div>
       )}
     </div>
   );
@@ -867,5 +1029,12 @@ addLinkBtn: {
   fontFamily: 'Georgia, serif',
   cursor: 'pointer',
   marginTop: '4px',
+},
+registeredBtn: {
+  color: '#2ecc71',
+  fontSize: '13px',
+  fontFamily: 'Georgia, serif',
+  textDecoration: 'underline',
+  cursor: 'pointer',
 },
 };

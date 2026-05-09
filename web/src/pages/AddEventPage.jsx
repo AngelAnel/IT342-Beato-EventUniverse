@@ -80,7 +80,7 @@ export default function AddEventPage() {
   };
 
   const handleAddCategory = () => {
-    if (!categoryForm.price || !categoryForm.name || !categoryForm.slots) return;
+    if (!categoryForm.price || !categoryForm.name) return;
     setCategories(prev => [...prev, { ...categoryForm }]);
     setCategoryForm({ price: '', name: '', slots: '' });
     setShowCategoryModal(false);
@@ -96,13 +96,30 @@ export default function AddEventPage() {
     return;
   }
 
+
+  if ((gcashEnabled || onsiteEnabled) && (!categoriesEnabled || categories.length === 0)) {
+    setSubmitError('Please specify at least one category with a price since this is a paid event.');
+    return;
+  }
+
+  if (categoriesEnabled && categories.length === 0) {
+    setSubmitError('Please add at least one category.');
+    return;
+  }
+
+  // If categories are defined but no payment method selected
+  if (categoriesEnabled && categories.length > 0 && !gcashEnabled && !onsiteEnabled) {
+    setSubmitError('Please select at least one payment method since you have defined categories.');
+    return;
+  }
+
   setSubmitting(true);
   setSubmitError('');
 
   try {
     const token = localStorage.getItem('token');
 
-    // Convert picture to Base64
+  
     let pictureBase64 = null;
     if (picture) {
       pictureBase64 = await new Promise((resolve) => {
@@ -319,7 +336,7 @@ export default function AddEventPage() {
                   </button>
                   {categories.map((cat, index) => (
                     <div key={index} style={styles.categoryTag}>
-                      <span>P {cat.price} • {cat.name} • {cat.slots} available slots</span>
+                      <span>P {cat.price} • {cat.name} • {cat.slots ? `${cat.slots} available slots` : 'Unlimited slots'}</span>
                       <button style={styles.deleteCategoryBtn} onClick={() => handleDeleteCategory(index)}>✕</button>
                     </div>
                   ))}
@@ -396,7 +413,7 @@ export default function AddEventPage() {
               style={styles.modalInput}
             />
 
-            <label style={styles.modalLabel}>Amount Available</label>
+            <label style={styles.modalLabel}>Amount Available <span style={{ fontWeight: 'normal', opacity: 0.6 }}>(optional)</span></label>
             <input
               type="number"
               value={categoryForm.slots}

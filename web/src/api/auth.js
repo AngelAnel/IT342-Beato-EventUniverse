@@ -60,3 +60,28 @@ export const getMyRegistrations = (token) =>
   axios.get('http://localhost:8080/api/v1/registrations/my', {
     headers: { Authorization: `Bearer ${token}` },
   });
+
+  export const getEventRegistrations = (eventId, token) =>
+  axios.get(`http://localhost:8080/api/v1/registrations/event/${eventId}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const confirmRegistration = (registrationId, token) =>
+  axios.put(`http://localhost:8080/api/v1/registrations/${registrationId}/confirm`, {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getMyConfirmedRegistrations = (token) =>
+  axios.get('http://localhost:8080/api/v1/registrations/my/confirmed', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const getNotifications = (token) =>
+  axios.get('http://localhost:8080/api/v1/notifications', {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const markNotificationsRead = (token) =>
+  axios.put('http://localhost:8080/api/v1/notifications/mark-read', {}, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
