@@ -57,6 +57,7 @@ public class NotificationController {
                 map.put("message", n.getMessage());
                 map.put("read", n.isRead());
                 map.put("createdAt", n.getCreatedAt());
+                map.put("eventId", n.getEventId());
                 list.add(map);
             }
 

@@ -28,11 +28,15 @@ public class Notification {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "event_id")
+    private UUID eventId;
+
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
         this.read = false;
     }
+
 
     public UUID getId() { return id; }
     public User getUser() { return user; }
@@ -40,6 +44,7 @@ public class Notification {
     public String getMessage() { return message; }
     public boolean isRead() { return read; }
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public UUID getEventId() { return eventId; }
 
     public void setId(UUID id) { this.id = id; }
     public void setUser(User user) { this.user = user; }
@@ -47,4 +52,5 @@ public class Notification {
     public void setMessage(String message) { this.message = message; }
     public void setRead(boolean read) { this.read = read; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setEventId(UUID eventId) { this.eventId = eventId; }
 }
