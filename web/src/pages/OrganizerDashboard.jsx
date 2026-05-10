@@ -5,6 +5,7 @@ import DashboardNav from '../components/DashboardNav';
 import defaultEventImg from '../assets/default-event.png';
 import { getMyEvents, getMyArchivedEvents, getEventRegistrations, confirmRegistration } from '../api/auth';
 
+
 const DEPT_ACRONYMS = {
   'College of Engineering and Architecture': 'CEA',
   'College of Management, Business and Accountancy': 'CMBA',
@@ -302,7 +303,15 @@ export default function OrganizerDashboard() {
                   <span style={styles.detailsPrice}>{priceInfo.value}</span>
                 )}
               </div>
-              <button style={styles.editBtn}>Edit Event Details</button>
+              <button
+                  style={styles.editBtn}
+                  onClick={() => {
+                    setSelectedEvent(null);
+                    navigate('/organizer/edit-event', { state: { event: selectedEvent } });
+                  }}
+                >
+                  Edit Event Details
+                </button>
             </div>
 
             {/* Details body */}

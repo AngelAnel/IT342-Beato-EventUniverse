@@ -90,3 +90,13 @@ export const markNotificationsRead = (token) =>
   axios.get('http://localhost:8080/api/v1/registrations/my/archived', {
     headers: { Authorization: `Bearer ${token}` },
   });
+
+  export const updateEvent = (id, data, token) =>
+  axios.put(`http://localhost:8080/api/v1/events/${id}`, data, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+export const deleteEvent = (id, token) =>
+  axios.delete(`http://localhost:8080/api/v1/events/${id}`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });

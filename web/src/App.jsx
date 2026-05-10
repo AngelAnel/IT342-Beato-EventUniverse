@@ -10,6 +10,7 @@ import AddEventPage from './pages/AddEventPage';
 import OAuth2Callback from './pages/OAuth2Callback';
 import ParticipantProfile from './pages/ParticipantProfile';
 import OrganizerProfile from './pages/OrganizerProfile';
+import EditEventPage from './pages/EditEventPage';
 
 function ProtectedRoute({ children, allowedRole }) {
   const user = JSON.parse(localStorage.getItem('user'));
@@ -60,6 +61,7 @@ export default function App() {
         } />
         <Route path="/login" element={<Navigate to="/" />} />
         <Route path="/register" element={<Navigate to="/" />} />
+        <Route path="/organizer/edit-event" element={<EditEventPage />} />
       </Routes>
     </BrowserRouter>
   );
