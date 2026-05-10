@@ -253,6 +253,8 @@ public class RegistrationController {
                 map.put("paymentMethod", reg.getPaymentMethod());
                 map.put("status", reg.getStatus());
                 map.put("createdAt", reg.getCreatedAt());
+                map.put("proofOfPayment", reg.getProofOfPayment());
+                map.put("links", reg.getLinks());
                 list.add(map);
             }
 
