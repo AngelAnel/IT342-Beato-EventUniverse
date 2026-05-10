@@ -7,6 +7,8 @@ import edu.cit.beato.eventuniverse.repository.EventRepository;
 import edu.cit.beato.eventuniverse.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import edu.cit.beato.eventuniverse.repository.RegistrationRepository;
+import edu.cit.beato.eventuniverse.model.Registration;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -19,11 +21,14 @@ public class EventController {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+    private final RegistrationRepository registrationRepository;
 
-    public EventController(EventRepository eventRepository, UserRepository userRepository, JwtUtil jwtUtil) {
+    public EventController(EventRepository eventRepository, UserRepository userRepository, JwtUtil jwtUtil,
+                           RegistrationRepository registrationRepository) {
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
+        this.registrationRepository = registrationRepository;
     }
 
     // Helper to get user from token
@@ -327,6 +332,54 @@ public class EventController {
             response.put("success", true);
             response.put("message", "Event updated successfully");
             response.put("data", buildEventMap(event));
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("message", "Something went wrong: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
+
+    // DELETE /api/v1/events/{id} — delete event completely
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> deleteEvent(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable UUID id) {
+
+        Map<String, Object> response = new HashMap<>();
+        try {
+            User organizer = getUserFromToken(authHeader);
+            if (organizer == null) {
+                response.put("success", false);
+                response.put("message", "Unauthorized");
+                return ResponseEntity.status(401).body(response);
+            }
+
+            Event event = eventRepository.findById(id).orElse(null);
+            if (event == null) {
+                response.put("success", false);
+                response.put("message", "Event not found");
+                return ResponseEntity.status(404).body(response);
+            }
+
+            if (!event.getOrganizer().getId().equals(organizer.getId())) {
+                response.put("success", false);
+                response.put("message", "You are not authorized to delete this event");
+                return ResponseEntity.status(403).body(response);
+            }
+
+            List<Registration> registrations = registrationRepository.findByEvent(event);
+            if (!registrations.isEmpty()) {
+                response.put("success", false);
+                response.put("message", "You cannot delete events that already has registrants");
+                return ResponseEntity.status(400).body(response);
+            }
+
+            eventRepository.delete(event);
+
+            response.put("success", true);
+            response.put("message", "Event deleted successfully");
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
