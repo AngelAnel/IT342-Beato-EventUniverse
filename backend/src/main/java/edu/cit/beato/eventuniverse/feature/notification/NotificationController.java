@@ -1,10 +1,8 @@
-package edu.cit.beato.eventuniverse.controller;
+package edu.cit.beato.eventuniverse.feature.notification;
 
-import edu.cit.beato.eventuniverse.config.JwtUtil;
-import edu.cit.beato.eventuniverse.model.Notification;
-import edu.cit.beato.eventuniverse.model.User;
-import edu.cit.beato.eventuniverse.repository.NotificationRepository;
-import edu.cit.beato.eventuniverse.repository.UserRepository;
+import edu.cit.beato.eventuniverse.feature.auth.JwtUtil;
+import edu.cit.beato.eventuniverse.feature.auth.User;
+import edu.cit.beato.eventuniverse.feature.auth.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

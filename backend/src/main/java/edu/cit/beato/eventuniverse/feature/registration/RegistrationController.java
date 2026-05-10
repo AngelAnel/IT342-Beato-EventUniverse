@@ -1,17 +1,15 @@
-package edu.cit.beato.eventuniverse.controller;
+package edu.cit.beato.eventuniverse.feature.registration;
 
-import edu.cit.beato.eventuniverse.config.JwtUtil;
-import edu.cit.beato.eventuniverse.model.Event;
-import edu.cit.beato.eventuniverse.model.Registration;
-import edu.cit.beato.eventuniverse.model.User;
-import edu.cit.beato.eventuniverse.repository.EventRepository;
-import edu.cit.beato.eventuniverse.repository.RegistrationRepository;
-import edu.cit.beato.eventuniverse.repository.UserRepository;
+import edu.cit.beato.eventuniverse.feature.auth.JwtUtil;
+import edu.cit.beato.eventuniverse.feature.event.Event;
+import edu.cit.beato.eventuniverse.feature.auth.User;
+import edu.cit.beato.eventuniverse.feature.event.EventRepository;
+import edu.cit.beato.eventuniverse.feature.auth.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import edu.cit.beato.eventuniverse.model.Notification;
-import edu.cit.beato.eventuniverse.repository.NotificationRepository;
-import edu.cit.beato.eventuniverse.service.EmailService;
+import edu.cit.beato.eventuniverse.feature.notification.Notification;
+import edu.cit.beato.eventuniverse.feature.notification.NotificationRepository;
+import edu.cit.beato.eventuniverse.shared.EmailService;
 import java.util.*;
 import java.time.LocalDateTime;
 

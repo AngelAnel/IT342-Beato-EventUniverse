@@ -1,4 +1,4 @@
-package edu.cit.beato.eventuniverse.model;
+package edu.cit.beato.eventuniverse.feature.auth;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;

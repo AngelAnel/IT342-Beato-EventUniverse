@@ -1,8 +1,7 @@
-package edu.cit.beato.eventuniverse.repository;
+package edu.cit.beato.eventuniverse.feature.registration;
 
-import edu.cit.beato.eventuniverse.model.Event;
-import edu.cit.beato.eventuniverse.model.Registration;
-import edu.cit.beato.eventuniverse.model.User;
+import edu.cit.beato.eventuniverse.feature.event.Event;
+import edu.cit.beato.eventuniverse.feature.auth.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

@@ -1,7 +1,5 @@
-package edu.cit.beato.eventuniverse.config;
+package edu.cit.beato.eventuniverse.feature.auth;
 
-import edu.cit.beato.eventuniverse.model.User;
-import edu.cit.beato.eventuniverse.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;

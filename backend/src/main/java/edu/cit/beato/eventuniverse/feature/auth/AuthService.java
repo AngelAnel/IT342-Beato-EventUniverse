@@ -1,9 +1,4 @@
-package edu.cit.beato.eventuniverse.service;
-import edu.cit.beato.eventuniverse.config.JwtUtil;
-import edu.cit.beato.eventuniverse.dto.LoginRequest;
-import edu.cit.beato.eventuniverse.dto.RegisterRequest;
-import edu.cit.beato.eventuniverse.model.User;
-import edu.cit.beato.eventuniverse.repository.UserRepository;
+package edu.cit.beato.eventuniverse.feature.auth;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.HashMap;

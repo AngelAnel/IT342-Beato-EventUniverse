@@ -1,4 +1,4 @@
-package edu.cit.beato.eventuniverse.config;
+package edu.cit.beato.eventuniverse.feature.auth;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

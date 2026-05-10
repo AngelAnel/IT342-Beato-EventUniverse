@@ -1,4 +1,4 @@
-package edu.cit.beato.eventuniverse.dto;
+package edu.cit.beato.eventuniverse.feature.auth;
 
 import jakarta.validation.constraints.*;
 

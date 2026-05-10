@@ -1,11 +1,5 @@
-package edu.cit.beato.eventuniverse.controller;
+package edu.cit.beato.eventuniverse.feature.auth;
 
-import edu.cit.beato.eventuniverse.config.JwtUtil;
-import edu.cit.beato.eventuniverse.dto.LoginRequest;
-import edu.cit.beato.eventuniverse.dto.RegisterRequest;
-import edu.cit.beato.eventuniverse.model.User;
-import edu.cit.beato.eventuniverse.repository.UserRepository;
-import edu.cit.beato.eventuniverse.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

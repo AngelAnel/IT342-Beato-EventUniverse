@@ -1,7 +1,6 @@
-package edu.cit.beato.eventuniverse.repository;
+package edu.cit.beato.eventuniverse.feature.notification;
 
-import edu.cit.beato.eventuniverse.model.Notification;
-import edu.cit.beato.eventuniverse.model.User;
+import edu.cit.beato.eventuniverse.feature.auth.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

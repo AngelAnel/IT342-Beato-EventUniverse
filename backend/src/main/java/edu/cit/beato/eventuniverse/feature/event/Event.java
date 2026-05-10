@@ -1,8 +1,8 @@
-package edu.cit.beato.eventuniverse.model;
+package edu.cit.beato.eventuniverse.feature.event;
 
+import edu.cit.beato.eventuniverse.feature.auth.User;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Entity

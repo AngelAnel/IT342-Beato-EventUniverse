@@ -1,4 +1,4 @@
-package edu.cit.beato.eventuniverse.service;
+package edu.cit.beato.eventuniverse.shared;
 
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;

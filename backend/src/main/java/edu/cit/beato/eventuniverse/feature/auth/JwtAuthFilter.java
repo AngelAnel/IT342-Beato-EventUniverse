@@ -1,6 +1,5 @@
-package edu.cit.beato.eventuniverse.config;
+package edu.cit.beato.eventuniverse.feature.auth;
 
-import edu.cit.beato.eventuniverse.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

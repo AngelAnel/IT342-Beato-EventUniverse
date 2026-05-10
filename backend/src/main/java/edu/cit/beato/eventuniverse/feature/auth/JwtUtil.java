@@ -1,6 +1,5 @@
-package edu.cit.beato.eventuniverse.config;
+package edu.cit.beato.eventuniverse.feature.auth;
 
-import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
