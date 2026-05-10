@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { loginUser } from '../api/auth';
-import logo from '../assets/logo-nobg.png';
+import { loginUser } from './auth';
+import logo from '../shared/assets/logo-nobg.png';
 
 export default function LoginOrganizer() {
   const navigate = useNavigate();

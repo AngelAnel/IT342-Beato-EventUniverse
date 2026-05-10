@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { registerUser } from '../api/auth';
-import logo from '../assets/logo-nobg.png';
+import { registerUser } from './auth';
+import logo from '../shared/assets/logo-nobg.png';
 
 const DEPARTMENTS = [
   'College of Engineering and Architecture',

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import logoWhite from '../assets/logo-nobg-whitever.png';
+import logoWhite from '../shared/assets/logo-nobg-whitever.png';
 import { useState, useEffect, useRef } from 'react';
-import { getNotifications, markNotificationsRead } from '../api/auth';
+import { getNotifications, markNotificationsRead } from '../auth/auth';
 
 export default function Navbar({ onSearch, onNotificationClick }) {
   const navigate = useNavigate();

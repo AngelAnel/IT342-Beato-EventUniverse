@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import filterIcon from '../assets/filter.png';
+import filterIcon from '../shared/assets/filter.png';
 
 const MONTHS = [
   'January', 'February', 'March', 'April', 'May', 'June',

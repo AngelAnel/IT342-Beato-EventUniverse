@@ -1,16 +1,16 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import LandingPage from './pages/LandingPage';
-import LoginParticipant from './pages/LoginParticipant';
-import LoginOrganizer from './pages/LoginOrganizer';
-import RegisterParticipant from './pages/RegisterParticipant';
-import RegisterOrganizer from './pages/RegisterOrganizer';
-import ParticipantDashboard from './pages/ParticipantDashboard';
-import OrganizerDashboard from './pages/OrganizerDashboard';
-import AddEventPage from './pages/AddEventPage';
-import OAuth2Callback from './pages/OAuth2Callback';
-import ParticipantProfile from './pages/ParticipantProfile';
-import OrganizerProfile from './pages/OrganizerProfile';
-import EditEventPage from './pages/EditEventPage';
+import LoginParticipant from './features/auth/LoginParticipant';
+import LoginOrganizer from './features/auth/LoginOrganizer';
+import RegisterParticipant from './features/auth/RegisterParticipant';
+import RegisterOrganizer from './features/auth/RegisterOrganizer';
+import OrganizerDashboard from './features/dashboard/OrganizerDashboard';
+import AddEventPage from './features/event/AddEventPage';
+import OAuth2Callback from './features/auth/OAuth2Callback';
+import ParticipantProfile from './features/profile/ParticipantProfile';
+import OrganizerProfile from './features/profile/OrganizerProfile';
+import EditEventPage from './features/event/EditEventPage';
+import LandingPage from './features/auth/LandingPage'
+import ParticipantDashboard from './features/dashboard/ParticipantDashboard'
 
 function ProtectedRoute({ children, allowedRole }) {
   const user = JSON.parse(localStorage.getItem('user'));

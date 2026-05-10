@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logoWhite from '../assets/logo-nobg-whitever.png';
-import { updateProfile, changePassword } from '../api/auth';
+import logoWhite from '../shared/assets/logo-nobg-whitever.png';
+import { updateProfile, changePassword } from '../auth/auth';
 
 const DEPARTMENTS = [
   'College of Engineering and Architecture',

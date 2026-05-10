@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import logo from '../assets/logo-nobg.png';
+import logo from '../shared/assets/logo-nobg.png';
 
 export default function LandingPage() {
   const navigate = useNavigate();

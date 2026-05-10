@@ -1,8 +1,8 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import defaultEventImg from '../assets/default-event.png';
-import { createEvent } from '../api/auth';
+import Navbar from '../shared/Navbar';
+import defaultEventImg from '../shared/assets/default-event.png';
+import { createEvent } from '../auth/auth';
 
 const DEPARTMENTS = [
   'College of Engineering and Architecture',

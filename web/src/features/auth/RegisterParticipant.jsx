@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { registerUser } from '../api/auth';
-import logo from '../assets/logo-nobg.png';
+import { registerUser } from './auth';
+import logo from '../shared/assets/logo-nobg.png';
 
 const DEPARTMENTS = [
   'College of Engineering and Architecture',
@@ -12,10 +12,10 @@ const DEPARTMENTS = [
   'College of Criminal Justice',
 ];
 
-export default function RegisterOrganizer() {
+export default function RegisterParticipant() {
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    firstName: '', email: '',
+    firstName: '', lastName: '', email: '',
     password: '', confirmPassword: '', department: '',
   });
   const [error, setError] = useState('');
@@ -28,8 +28,8 @@ export default function RegisterOrganizer() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { firstName, email, password, confirmPassword, department } = form;
-    if (!firstName || !email || !password || !confirmPassword || !department) {
+    const { firstName, lastName, email, password, confirmPassword, department } = form;
+    if (!firstName || !lastName || !email || !password || !confirmPassword || !department) {
       setError('All fields are required.'); return;
     }
     if (password !== confirmPassword) {
@@ -40,14 +40,9 @@ export default function RegisterOrganizer() {
     }
     setLoading(true);
     try {
-      const res = await registerUser({
-        firstName,
-        lastName: firstName,
-        email, password, confirmPassword, department,
-        role: 'Organization',
-      });
+      const res = await registerUser({ firstName, lastName, email, password, confirmPassword, department, role: 'Participant' });
       if (res.data.success) {
-        navigate('/login/organizer');
+        navigate('/login/participant');
       } else {
         setError(res.data.message || 'Registration failed.');
       }
@@ -69,12 +64,20 @@ export default function RegisterOrganizer() {
         <button style={styles.backBtn} onClick={() => navigate('/')}>&#8249;</button>
 
         <div style={styles.card}>
-          <h2 style={styles.cardTitle}>Register as Organizer</h2>
+          <h2 style={styles.cardTitle}>Register as Participant</h2>
 
           <form onSubmit={handleSubmit} style={styles.form}>
 
-            <label style={styles.label}>Organizational Name</label>
-            <input name="firstName" value={form.firstName} onChange={handleChange} style={styles.input} />
+            <div style={styles.row}>
+              <div style={styles.half}>
+                <label style={styles.label}>First Name</label>
+                <input name="firstName" value={form.firstName} onChange={handleChange} style={styles.input} />
+              </div>
+              <div style={styles.half}>
+                <label style={styles.label}>Last Name</label>
+                <input name="lastName" value={form.lastName} onChange={handleChange} style={styles.input} />
+              </div>
+            </div>
 
             <label style={styles.label}>Institutional Email</label>
             <input name="email" type="email" value={form.email} onChange={handleChange} style={styles.input} />
@@ -107,7 +110,7 @@ export default function RegisterOrganizer() {
 
         <p style={styles.loginLink}>
           Already have an account?{' '}
-          <Link to="/login/organizer" style={styles.link}>Login here</Link>
+          <Link to="/login/participant" style={styles.link}>Login here</Link>
         </p>
       </div>
     </div>

@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import DashboardNav from '../components/DashboardNav';
-import defaultEventImg from '../assets/default-event.png';
-import { getMyEvents, getMyArchivedEvents, getEventRegistrations, confirmRegistration } from '../api/auth';
+import Navbar from '../shared/Navbar';
+import DashboardNav from '../shared/DashboardNav';
+import defaultEventImg from '../shared/assets/default-event.png';
+import { getMyEvents, getMyArchivedEvents, getEventRegistrations, confirmRegistration } from '../auth/auth';
 
 const DEPT_ACRONYMS = {
   'College of Engineering and Architecture': 'CEA',

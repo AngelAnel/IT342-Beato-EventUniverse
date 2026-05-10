@@ -1,45 +1,42 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { loginUser } from '../api/auth';
-import logo from '../assets/logo-nobg.png';
+import { loginUser } from './auth';
+import logo from '../shared/assets/logo-nobg.png';
 
-
-export default function LoginParticipant() {
+export default function Login() {
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
-  const [googleError, setGoogleError] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError('');
-    setGoogleError(false);
+  };
+
+  const handleLogoClick = () => {
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user'));
+    if (token && user) {
+      navigate(user.role === 'Participant' ? '/dashboard/participant' : '/dashboard/organizer');
+    } else {
+      navigate('/login');
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-    setGoogleError(false);
     try {
       const res = await loginUser(form);
       if (res.data.success) {
         localStorage.setItem('token', res.data.data.accessToken);
         localStorage.setItem('user', JSON.stringify(res.data.data.user));
         const role = res.data.data.user.role;
-        if (role !== 'Participant') {
-          setError('This account is not a participant account.');
-          localStorage.clear();
-          return;
-        }
-        navigate('/dashboard/participant');
+        navigate(role === 'Participant' ? '/dashboard/participant' : '/dashboard/organizer');
       } else {
-        if (res.data.message === 'GOOGLE_USER') {
-          setGoogleError(true);
-        } else {
-          setError(res.data.message);
-        }
+        setError(res.data.message);
       }
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid email or password');
@@ -55,30 +52,23 @@ export default function LoginParticipant() {
   return (
     <div style={styles.page}>
 
-      <div style={styles.logoWrap}>
+      {/* Logo top left */}
+      <div style={styles.logoWrap} onClick={handleLogoClick} role="button">
         <img src={logo} alt="Logo" style={styles.logo} />
       </div>
 
+      {/* Left branding */}
       <div style={styles.branding}>
         <h1 style={styles.brandTitle}>EVENT<br />UNIVERSE</h1>
         <p style={styles.brandSub}>A wildcat experience</p>
       </div>
 
+      {/* Right side — card + register link stacked */}
       <div style={styles.rightSide}>
 
-        <button style={styles.backBtn} onClick={() => navigate('/')}>&#8249;</button>
-
+        {/* Login card */}
         <div style={styles.card}>
           <h2 style={styles.cardTitle}>Login</h2>
-
-          {/* Google user error box */}
-          {googleError && (
-            <div style={styles.googleErrorBox}>
-              <p style={styles.googleErrorText}>
-                This account was registered using Google. Please use the Google button below to sign in.
-              </p>
-            </div>
-          )}
 
           <form onSubmit={handleSubmit} style={styles.form}>
             <label style={styles.label}>Email</label>
@@ -106,10 +96,12 @@ export default function LoginParticipant() {
             </button>
           </form>
 
+          {/* Divider */}
           <div style={styles.dividerRow}>
             <div style={styles.dividerLine} />
           </div>
 
+          {/* Google login */}
           <div style={styles.googleRow}>
             <span style={styles.loginWithText}>Login with:</span>
             <button onClick={handleGoogleLogin} style={styles.googleBtn} title="Login with Google">
@@ -124,9 +116,10 @@ export default function LoginParticipant() {
           </div>
         </div>
 
+        {/* Register link sits naturally below the card */}
         <p style={styles.registerLink}>
           Still don't have an account?{' '}
-          <Link to="/register/participant" style={styles.link}>Register here</Link>
+          <Link to="/register" style={styles.link}>Register here</Link>
         </p>
 
       </div>
@@ -144,10 +137,22 @@ const styles = {
     position: 'relative',
     padding: '20px',
     gap: '80px',
+    flexDirection: 'row',
   },
-  logoWrap: { position: 'absolute', top: '20px', left: '24px' },
-  logo: { width: '52px', height: '52px', objectFit: 'contain' },
-  branding: { textAlign: 'center' },
+  logoWrap: {
+    position: 'absolute',
+    top: '20px',
+    left: '24px',
+    cursor: 'pointer',
+  },
+  logo: {
+    width: '52px',
+    height: '52px',
+    objectFit: 'contain',
+  },
+  branding: {
+    textAlign: 'center',
+  },
   brandTitle: {
     fontSize: '72px',
     fontWeight: '900',
@@ -167,23 +172,6 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    position: 'relative',
-  },
-  backBtn: {
-    position: 'absolute',
-    left: '-48px',
-    top: '12px',
-    backgroundColor: '#6b1a1a',
-    color: '#f5f0e8',
-    border: 'none',
-    borderRadius: '50%',
-    width: '36px',
-    height: '36px',
-    fontSize: '22px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   card: {
     backgroundColor: '#6b1a1a',
@@ -198,25 +186,14 @@ const styles = {
     fontSize: '36px',
     fontWeight: 'bold',
     textAlign: 'center',
-    marginBottom: '16px',
+    marginBottom: '28px',
     fontFamily: 'Georgia, serif',
   },
-  googleErrorBox: {
-    backgroundColor: '#f5f0e8',
-    borderRadius: '10px',
-    padding: '12px 16px',
-    marginBottom: '16px',
-    border: '2px solid #a82020',
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
   },
-  googleErrorText: {
-    color: '#6b1a1a',
-    fontSize: '13px',
-    fontFamily: 'Georgia, serif',
-    margin: 0,
-    textAlign: 'center',
-    lineHeight: '1.5',
-  },
-  form: { display: 'flex', flexDirection: 'column', gap: '6px' },
   label: {
     color: '#f5f0e8',
     fontWeight: 'bold',
