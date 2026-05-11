@@ -1,4 +1,4 @@
-package edu.cit.beato.eventuniverse
+package edu.cit.beato.eventuniverse.feature.auth
 
 import android.content.Intent
 import android.os.Bundle
@@ -8,6 +8,7 @@ import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import edu.cit.beato.eventuniverse.R
 import edu.cit.beato.eventuniverse.api.RegisterRequest
 import edu.cit.beato.eventuniverse.api.RetrofitClient
 import kotlinx.coroutines.launch
