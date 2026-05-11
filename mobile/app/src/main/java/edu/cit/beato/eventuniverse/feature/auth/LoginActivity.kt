@@ -1,4 +1,4 @@
-package edu.cit.beato.eventuniverse
+package edu.cit.beato.eventuniverse.feature.auth
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,12 +6,13 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.UnderlineSpan
 import android.view.View
-import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import edu.cit.beato.eventuniverse.feature.home.HomeActivity
+import edu.cit.beato.eventuniverse.R
 import edu.cit.beato.eventuniverse.api.LoginRequest
 import edu.cit.beato.eventuniverse.api.RetrofitClient
 import kotlinx.coroutines.launch

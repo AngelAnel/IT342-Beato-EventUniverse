@@ -1,8 +1,9 @@
-package edu.cit.beato.eventuniverse
+package edu.cit.beato.eventuniverse.feature.home
 
 import android.os.Bundle
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import edu.cit.beato.eventuniverse.R
 
 class HomeActivity : AppCompatActivity() {
 
