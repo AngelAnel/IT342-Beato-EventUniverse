@@ -514,11 +514,11 @@ const styles = {
   emptyText: { fontSize: '22px', color: '#b0a090', fontFamily: 'Georgia, serif', marginTop: '16px' },
   eventsGrid: {
     display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(420px, 1fr))',
-    gap: '24px', marginTop: '16px',
+    gap: '24px', marginTop: '16px', alignItems:'start',
   },
   card: {
     backgroundColor: '#f5f0e8', borderRadius: '16px', overflow: 'hidden',
-    boxShadow: '0 2px 12px rgba(0,0,0,0.08)', border: '1px solid rgba(107,26,26,0.1)',
+    boxShadow: '0 2px 12px rgba(0,0,0,0.08)', border: '1px solid rgba(107,26,26,0.1)', display:'flex', flexDirection:'column',
   },
   cardPicture: { width: '100%', height: '180px', overflow: 'hidden', backgroundColor: '#e8e3db' },
   cardImg: { width: '100%', height: '100%', objectFit: 'cover' },
