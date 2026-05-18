@@ -462,18 +462,35 @@ export default function OrganizerDashboard() {
             )}
 
             {/* Proof of Payment */}
-            {selectedRegistration.proofOfPayment && (
-              <div>
-                <p style={{ color: '#f5f0e8', fontSize: '14px', fontFamily: 'Georgia, serif', margin: '0 0 8px 0', fontWeight: 'bold' }}>
-                  Proof:
-                </p>
-                <img
-                  src={selectedRegistration.proofOfPayment}
-                  alt="Proof of Payment"
-                  style={{ width: '100%', borderRadius: '8px', objectFit: 'contain' }}
-                />
-              </div>
-            )}
+              {selectedRegistration.proofOfPayment && (
+                <div>
+                  <p style={{ color: '#f5f0e8', fontSize: '14px', fontFamily: 'Georgia, serif', margin: '0 0 8px 0', fontWeight: 'bold' }}>
+                    Proof:
+                  </p>
+                  {/* AI Summary */}
+                  {selectedRegistration.paymentSummary && (
+                    <div style={{
+                      backgroundColor: 'rgba(245,240,232,0.1)',
+                      borderRadius: '8px',
+                      padding: '10px 14px',
+                      marginBottom: '10px',
+                      border: '1px solid rgba(245,240,232,0.2)',
+                    }}>
+                      <p style={{ color: 'rgba(245,240,232,0.5)', fontSize: '10px', fontFamily: 'Georgia, serif', margin: '0 0 4px 0', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        ✨ AI Payment Summary
+                      </p>
+                      <p style={{ color: '#f5f0e8', fontSize: '12px', fontFamily: 'Georgia, serif', margin: 0, lineHeight: '1.5' }}>
+                        {selectedRegistration.paymentSummary}
+                      </p>
+                    </div>
+                  )}
+                  <img
+                    src={selectedRegistration.proofOfPayment}
+                    alt="Proof of Payment"
+                    style={{ width: '100%', borderRadius: '8px', objectFit: 'contain' }}
+                  />
+                </div>
+              )}
 
             {/* Timestamp */}
             <div style={{ borderTop: '1px solid rgba(245,240,232,0.2)', paddingTop: '10px', marginTop: '4px' }}>

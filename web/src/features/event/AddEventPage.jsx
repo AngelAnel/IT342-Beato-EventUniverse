@@ -113,6 +113,18 @@ export default function AddEventPage() {
     return;
   }
 
+  // If GCash enabled but no QR uploaded
+  if (gcashEnabled && gcashQRs.length === 0) {
+    setSubmitError('Please upload at least one GCash QR code.');
+    return;
+  }
+
+  // If Onsite enabled but no details added
+  if (onsiteEnabled && !onsiteConfirmed) {
+    setSubmitError('Please add the details for onsite payment.');
+    return;
+  }
+
   setSubmitting(true);
   setSubmitError('');
 
