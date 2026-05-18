@@ -49,6 +49,16 @@ public class Registration {
     @Column(name = "links", columnDefinition = "TEXT")
     private String links;
 
+    @Column(name = "payment_summary", columnDefinition = "TEXT")
+    private String paymentSummary;
+
+    public String getPaymentSummary() {
+        return paymentSummary;
+    }
+    public void setPaymentSummary(String paymentSummary) {
+        this.paymentSummary = paymentSummary;
+    }
+
     // Getters
     public String getLinks() { return links; }
     public UUID getId() { return id; }

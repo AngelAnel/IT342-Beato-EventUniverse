@@ -5,13 +5,15 @@ import edu.cit.beato.eventuniverse.feature.event.Event;
 import edu.cit.beato.eventuniverse.feature.auth.User;
 import edu.cit.beato.eventuniverse.feature.event.EventRepository;
 import edu.cit.beato.eventuniverse.feature.auth.UserRepository;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
 import edu.cit.beato.eventuniverse.feature.notification.Notification;
 import edu.cit.beato.eventuniverse.feature.notification.NotificationRepository;
 import edu.cit.beato.eventuniverse.shared.EmailService;
-import java.util.*;
+import edu.cit.beato.eventuniverse.shared.GroqService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import java.time.LocalDateTime;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/registrations")
@@ -21,23 +23,24 @@ public class RegistrationController {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
-
     private final NotificationRepository notificationRepository;
     private final EmailService emailService;
+    private final GroqService groqService;
 
     public RegistrationController(RegistrationRepository registrationRepository,
                                   EventRepository eventRepository,
                                   UserRepository userRepository,
                                   JwtUtil jwtUtil,
                                   NotificationRepository notificationRepository,
-                                  EmailService emailService) {
+                                  EmailService emailService,
+                                  GroqService groqService) {
         this.registrationRepository = registrationRepository;
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.jwtUtil = jwtUtil;
         this.notificationRepository = notificationRepository;
         this.emailService = emailService;
-
+        this.groqService = groqService;
     }
 
     private User getUserFromToken(String authHeader) {
@@ -70,7 +73,6 @@ public class RegistrationController {
                 return ResponseEntity.status(404).body(response);
             }
 
-            // Check if already registered
             Optional<Registration> existing = registrationRepository.findByParticipantAndEvent(participant, event);
             if (existing.isPresent()) {
                 response.put("success", false);
@@ -84,10 +86,19 @@ public class RegistrationController {
             registration.setCategoryName((String) body.get("categoryName"));
             registration.setCategoryPrice((String) body.get("categoryPrice"));
             registration.setPaymentMethod((String) body.get("paymentMethod"));
-            registration.setProofOfPayment((String) body.get("proofOfPayment"));
+
+            String proofOfPayment = (String) body.get("proofOfPayment");
+            registration.setProofOfPayment(proofOfPayment);
+
+            if (proofOfPayment != null && !proofOfPayment.isEmpty()) {
+                String summary = groqService.analyzePaymentProof(proofOfPayment);
+                registration.setPaymentSummary(summary);
+            }
+
             registration.setLinks((String) body.get("links"));
 
             registrationRepository.save(registration);
+
             // Create notification for organizer
             Notification organizerNotif = new Notification();
             organizerNotif.setUser(event.getOrganizer());
@@ -119,7 +130,6 @@ public class RegistrationController {
     }
 
     // GET /api/v1/registrations/event/{eventId}/slot-counts
-    // Returns how many registrants per category for an event
     @GetMapping("/event/{eventId}/slot-counts")
     public ResponseEntity<Map<String, Object>> getSlotCounts(
             @RequestHeader("Authorization") String authHeader,
@@ -143,14 +153,12 @@ public class RegistrationController {
 
             List<Registration> registrations = registrationRepository.findByEvent(event);
 
-            // Count per category
             Map<String, Integer> counts = new HashMap<>();
             for (Registration reg : registrations) {
                 String cat = reg.getCategoryName();
                 counts.put(cat, counts.getOrDefault(cat, 0) + 1);
             }
 
-            // Also check if current participant already registered
             Optional<Registration> myReg = registrationRepository.findByParticipantAndEvent(user, event);
 
             response.put("success", true);
@@ -171,7 +179,7 @@ public class RegistrationController {
         }
     }
 
-    // GET /api/v1/registrations/my — get participant's own registrations
+    // GET /api/v1/registrations/my
     @GetMapping("/my")
     public ResponseEntity<Map<String, Object>> getMyRegistrations(
             @RequestHeader("Authorization") String authHeader) {
@@ -215,7 +223,7 @@ public class RegistrationController {
         }
     }
 
-    // GET /api/v1/registrations/event/{eventId} — get all registrations for an event (organizer)
+    // GET /api/v1/registrations/event/{eventId}
     @GetMapping("/event/{eventId}")
     public ResponseEntity<Map<String, Object>> getEventRegistrations(
             @RequestHeader("Authorization") String authHeader,
@@ -253,6 +261,7 @@ public class RegistrationController {
                 map.put("createdAt", reg.getCreatedAt());
                 map.put("proofOfPayment", reg.getProofOfPayment());
                 map.put("links", reg.getLinks());
+                map.put("paymentSummary", reg.getPaymentSummary());
                 list.add(map);
             }
 
@@ -267,7 +276,7 @@ public class RegistrationController {
         }
     }
 
-    // PUT /api/v1/registrations/{id}/confirm — confirm a registration
+    // PUT /api/v1/registrations/{id}/confirm
     @PutMapping("/{id}/confirm")
     public ResponseEntity<Map<String, Object>> confirmRegistration(
             @RequestHeader("Authorization") String authHeader,
@@ -289,11 +298,9 @@ public class RegistrationController {
                 return ResponseEntity.status(404).body(response);
             }
 
-            // Update status
             registration.setStatus("Confirmed");
             registrationRepository.save(registration);
 
-            // Create notification
             Notification notification = new Notification();
             notification.setUser(registration.getParticipant());
             notification.setTitle(registration.getEvent().getEventName());
@@ -301,8 +308,6 @@ public class RegistrationController {
             notification.setEventId(registration.getEvent().getId());
             notificationRepository.save(notification);
 
-
-            // Send email
             String participantName = registration.getParticipant().getFirstName()
                     + " " + registration.getParticipant().getLastName();
             String eventDateTime = registration.getEvent().getEventDateTime().toString();
@@ -332,7 +337,7 @@ public class RegistrationController {
         }
     }
 
-    // GET /api/v1/registrations/my/confirmed — get confirmed registrations for participant
+    // GET /api/v1/registrations/my/confirmed
     @GetMapping("/my/confirmed")
     public ResponseEntity<Map<String, Object>> getMyConfirmedRegistrations(
             @RequestHeader("Authorization") String authHeader) {
@@ -382,7 +387,7 @@ public class RegistrationController {
         }
     }
 
-    // GET /api/v1/registrations/my/archived — confirmed registrations where event is past
+    // GET /api/v1/registrations/my/archived
     @GetMapping("/my/archived")
     public ResponseEntity<Map<String, Object>> getMyArchivedRegistrations(
             @RequestHeader("Authorization") String authHeader) {
