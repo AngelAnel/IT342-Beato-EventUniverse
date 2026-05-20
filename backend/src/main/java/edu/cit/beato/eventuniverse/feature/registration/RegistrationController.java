@@ -151,7 +151,7 @@ public class RegistrationController {
                 return ResponseEntity.status(404).body(response);
             }
 
-            List<Registration> registrations = registrationRepository.findByEvent(event);
+            List<Registration> registrations = registrationRepository.findByEventAndStatus(event, "Confirmed");
 
             Map<String, Integer> counts = new HashMap<>();
             for (Registration reg : registrations) {
@@ -161,15 +161,22 @@ public class RegistrationController {
 
             Optional<Registration> myReg = registrationRepository.findByParticipantAndEvent(user, event);
 
+            Map<String, Object> data = new HashMap<>();
+            data.put("counts", counts);
+            data.put("alreadyRegistered", myReg.isPresent());
+
+            if (myReg.isPresent()) {
+                Registration r = myReg.get();
+                Map<String, Object> myRegMap = new HashMap<>();
+                myRegMap.put("categoryName", r.getCategoryName());
+                myRegMap.put("status", r.getStatus());
+                data.put("myRegistration", myRegMap);
+            } else {
+                data.put("myRegistration", null);
+            }
+
             response.put("success", true);
-            response.put("data", Map.of(
-                    "counts", counts,
-                    "alreadyRegistered", myReg.isPresent(),
-                    "myRegistration", myReg.map(r -> Map.of(
-                            "categoryName", r.getCategoryName(),
-                            "status", r.getStatus()
-                    )).orElse(null)
-            ));
+            response.put("data", data);
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
@@ -245,7 +252,7 @@ public class RegistrationController {
                 return ResponseEntity.status(404).body(response);
             }
 
-            List<Registration> registrations = registrationRepository.findByEvent(event);
+            List<Registration> registrations = registrationRepository.findByEventAndStatus(event, "Confirmed");
             List<Map<String, Object>> list = new ArrayList<>();
 
             for (Registration reg : registrations) {

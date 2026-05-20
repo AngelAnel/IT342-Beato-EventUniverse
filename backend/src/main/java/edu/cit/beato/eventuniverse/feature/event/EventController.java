@@ -367,7 +367,7 @@ public class EventController {
                 return ResponseEntity.status(403).body(response);
             }
 
-            List<Registration> registrations = registrationRepository.findByEvent(event);
+            List<Registration> registrations = registrationRepository.findByEventAndStatus(event, "Confirmed");
             if (!registrations.isEmpty()) {
                 response.put("success", false);
                 response.put("message", "You cannot delete events that already has registrants");

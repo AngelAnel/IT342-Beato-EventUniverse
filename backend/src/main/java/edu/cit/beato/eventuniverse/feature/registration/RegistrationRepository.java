@@ -9,7 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface RegistrationRepository extends JpaRepository<Registration, UUID> {
-    List<Registration> findByEvent(Event event);
+    List<Registration> findByEventAndStatus(Event event, String status);
     Optional<Registration> findByParticipantAndEvent(User participant, Event event);
     List<Registration> findByParticipant(User participant);
 }
