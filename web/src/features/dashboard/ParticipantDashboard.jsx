@@ -751,6 +751,7 @@ export default function ParticipantDashboard() {
 
       {registerEvent && (
         <RegisterModal
+          key={registerEvent.id}
           event={registerEvent}
           token={token}
           onClose={() => setRegisterEvent(null)}
