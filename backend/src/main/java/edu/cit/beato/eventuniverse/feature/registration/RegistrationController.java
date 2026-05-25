@@ -252,7 +252,7 @@ public class RegistrationController {
                 return ResponseEntity.status(404).body(response);
             }
 
-            List<Registration> registrations = registrationRepository.findByEventAndStatus(event, "Confirmed");
+            List<Registration> registrations = registrationRepository.findByEvent(event);
             List<Map<String, Object>> list = new ArrayList<>();
 
             for (Registration reg : registrations) {

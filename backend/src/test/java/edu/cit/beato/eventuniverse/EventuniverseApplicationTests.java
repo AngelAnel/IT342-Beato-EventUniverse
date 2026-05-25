@@ -288,4 +288,78 @@ class EventuniverseApplicationTests {
 	void testUserRepositoryFindByEmailReturnsEmptyForUnknown() {
 		assertTrue(userRepository.findByEmail("nobody_xyz_404@nowhere.com").isEmpty());
 	}
+
+	// ── 7. GROQ AI / PAYMENT SUMMARY ─────────────────────────────────
+
+	@Test
+	void testRegistrationPaymentSummaryCanBeSaved() {
+		User organizer = createTestUser("organizer_groq1_junit@example.com");
+		User participant = createTestUser("participant_groq1_junit@example.com");
+		Event event = createTestEvent(organizer);
+
+		Registration reg = new Registration();
+		reg.setStatus("Pending");
+		reg.setPaymentMethod("GCash");
+		reg.setCategoryName("General");
+		reg.setCategoryPrice("100");
+		reg.setPaymentSummary("GCash payment of P100 sent to 09XX on May 19, 2026.");
+		reg.setEvent(event);
+		reg.setParticipant(participant);
+		registrationRepository.save(reg);
+
+		Registration found = registrationRepository.findById(reg.getId()).orElseThrow();
+		assertEquals("GCash payment of P100 sent to 09XX on May 19, 2026.", found.getPaymentSummary());
+		registrationRepository.delete(reg);
+		eventRepository.delete(event);
+		userRepository.delete(organizer);
+		userRepository.delete(participant);
+	}
+
+	@Test
+	void testRegistrationPaymentSummaryIsNullableForFreeEvents() {
+		User organizer = createTestUser("organizer_groq2_junit@example.com");
+		User participant = createTestUser("participant_groq2_junit@example.com");
+		Event event = createTestEvent(organizer);
+
+		Registration reg = new Registration();
+		reg.setStatus("Pending");
+		reg.setPaymentMethod("Not specified");
+		reg.setCategoryName("General");
+		reg.setCategoryPrice("0");
+		reg.setPaymentSummary(null);
+		reg.setEvent(event);
+		reg.setParticipant(participant);
+		registrationRepository.save(reg);
+
+		Registration found = registrationRepository.findById(reg.getId()).orElseThrow();
+		assertNull(found.getPaymentSummary());
+		registrationRepository.delete(reg);
+		eventRepository.delete(event);
+		userRepository.delete(organizer);
+		userRepository.delete(participant);
+	}
+
+	@Test
+	void testRegistrationLinksCanBeSaved() {
+		User organizer = createTestUser("organizer_groq3_junit@example.com");
+		User participant = createTestUser("participant_groq3_junit@example.com");
+		Event event = createTestEvent(organizer);
+
+		Registration reg = new Registration();
+		reg.setStatus("Pending");
+		reg.setPaymentMethod("Not specified");
+		reg.setCategoryName("General");
+		reg.setCategoryPrice("0");
+		reg.setLinks("https://drive.google.com/file1,https://drive.google.com/file2");
+		reg.setEvent(event);
+		reg.setParticipant(participant);
+		registrationRepository.save(reg);
+
+		Registration found = registrationRepository.findById(reg.getId()).orElseThrow();
+		assertEquals("https://drive.google.com/file1,https://drive.google.com/file2", found.getLinks());
+		registrationRepository.delete(reg);
+		eventRepository.delete(event);
+		userRepository.delete(organizer);
+		userRepository.delete(participant);
+	}
 }
