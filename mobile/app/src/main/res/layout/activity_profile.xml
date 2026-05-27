@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cream"
+    android:orientation="vertical">
+
+    <!-- TOP BAR -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:background="@color/dark_maroon"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="‹"
+            android:textSize="22sp"
+            android:textColor="@color/cream"
+            android:background="@drawable/back_button_background"
+            android:padding="0dp"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="My Profile"
+            android:textColor="@color/cream"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:fontFamily="serif"
+            android:layout_marginStart="16dp"/>
+
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="24dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Name display -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginBottom="24dp">
+
+                <TextView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:text="👤"
+                    android:textSize="48sp"
+                    android:gravity="center"
+                    android:layout_marginBottom="8dp"/>
+
+                <TextView
+                    android:id="@+id/tvFirstName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/dark_maroon"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:fontFamily="serif"/>
+
+                <TextView
+                    android:id="@+id/tvLastName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/dark_maroon"
+                    android:textSize="18sp"
+                    android:fontFamily="serif"/>
+
+            </LinearLayout>
+
+            <!-- Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/card_background"
+                android:padding="24dp">
+
+                <!-- First Name -->
+                <TextView
+                    style="@style/FieldLabel"
+                    android:text="First Name"/>
+                <EditText
+                    android:id="@+id/etFirstName"
+                    style="@style/FieldInput"
+                    android:inputType="textPersonName"/>
+
+                <!-- Last Name -->
+                <TextView
+                    style="@style/FieldLabel"
+                    android:text="Last Name"/>
+                <EditText
+                    android:id="@+id/etLastName"
+                    style="@style/FieldInput"
+                    android:inputType="textPersonName"/>
+
+                <!-- Email (disabled) -->
+                <TextView
+                    style="@style/FieldLabel"
+                    android:text="Email"/>
+                <EditText
+                    android:id="@+id/etEmail"
+                    style="@style/FieldInput"
+                    android:inputType="textEmailAddress"
+                    android:enabled="false"
+                    android:alpha="0.6"/>
+
+                <!-- Department -->
+                <TextView
+                    style="@style/FieldLabel"
+                    android:text="Department"/>
+                <Spinner
+                    android:id="@+id/spinnerDept"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="@drawable/input_background"
+                    android:layout_marginBottom="16dp"/>
+
+                <!-- Error -->
+                <TextView
+                    android:id="@+id/tvError"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#FFCCCC"
+                    android:textSize="13sp"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    android:layout_marginBottom="4dp"/>
+
+                <!-- Success -->
+                <TextView
+                    android:id="@+id/tvSuccess"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#2ecc71"
+                    android:textSize="13sp"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    android:layout_marginBottom="4dp"/>
+
+                <!-- Edit/Save Button -->
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnEditSave"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Edit"
+                    android:textColor="@color/cream"
+                    android:textStyle="bold"
+                    android:background="@drawable/red_button_background"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="12dp"/>
+
+                <!-- Change Password -->
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btnChangePassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Change Password"
+                    android:textColor="@color/cream"
+                    android:textStyle="bold"
+                    android:background="@drawable/card_background"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>
