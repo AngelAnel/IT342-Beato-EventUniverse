@@ -9,151 +9,115 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="28dp"
+        android:gravity="center_horizontal">
 
-        <!-- Logo only — clickable, goes back to login (itself, so just stays) -->
+        <!-- Back button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="24dp">
+
+            <Button
+                android:id="@+id/btnBack"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:text="‹"
+                android:textSize="22sp"
+                android:textColor="@color/cream"
+                android:background="@drawable/back_button_background"
+                android:padding="0dp"/>
+
+        </LinearLayout>
+
+        <!-- Logo -->
         <ImageView
-            android:id="@+id/ivLogo"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
             android:src="@drawable/logonobg"
-            android:scaleType="fitCenter"
-            android:layout_marginBottom="32dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?attr/selectableItemBackgroundBorderless" />
+            android:contentDescription="Logo"
+            android:layout_marginBottom="12dp"/>
 
-        <!-- Brand name -->
+        <!-- Title -->
         <TextView
-            android:layout_width="match_parent"
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="EVENT"
-            android:textColor="@color/dark_maroon"
-            android:textSize="52sp"
+            android:text="Login as Participant"
+            android:textSize="22sp"
             android:textStyle="bold"
-            android:fontFamily="serif"
-            android:letterSpacing="0.08" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="UNIVERSE"
             android:textColor="@color/dark_maroon"
-            android:textSize="52sp"
-            android:textStyle="bold"
             android:fontFamily="serif"
-            android:letterSpacing="0.08" />
+            android:layout_marginBottom="28dp"/>
 
-        <TextView
+        <!-- Card -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="A wildcat experience"
-            android:textColor="#8B6B4A"
-            android:textSize="16sp"
-            android:fontFamily="serif"
-            android:layout_marginBottom="40dp" />
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:padding="28dp">
 
-        <!-- Login Card -->
-        <androidx.cardview.widget.CardView
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardBackgroundColor="@color/dark_maroon"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="4dp">
+            <!-- Email -->
+            <TextView
+                style="@style/FieldLabel"
+                android:text="Email"/>
 
-            <LinearLayout
+            <EditText
+                android:id="@+id/etEmail"
+                style="@style/FieldInput"
+                android:hint="Enter your email"
+                android:inputType="textEmailAddress"/>
+
+            <!-- Password -->
+            <TextView
+                style="@style/FieldLabel"
+                android:text="Password"/>
+
+            <EditText
+                android:id="@+id/etPassword"
+                style="@style/FieldInput"
+                android:hint="Enter your password"
+                android:inputType="textPassword"/>
+
+            <!-- Error -->
+            <TextView
+                android:id="@+id/tvError"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="28dp">
+                android:textColor="#FFCCCC"
+                android:textSize="13sp"
+                android:gravity="center"
+                android:visibility="gone"
+                android:layout_marginBottom="8dp"/>
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Login"
-                    android:textColor="@color/cream"
-                    android:textSize="30sp"
-                    android:textStyle="bold"
-                    android:fontFamily="serif"
-                    android:gravity="center"
-                    android:layout_marginBottom="24dp" />
+            <!-- Login button -->
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnLogin"
+                android:layout_width="180dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center_horizontal"
+                android:text="login"
+                android:textColor="@color/cream"
+                android:textStyle="bold"
+                android:fontFamily="serif"
+                android:background="@drawable/red_button_background"
+                android:layout_marginTop="16dp"/>
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Email"
-                    android:textColor="@color/cream"
-                    android:textStyle="bold"
-                    android:textSize="14sp"
-                    android:layout_marginBottom="4dp" />
+        </LinearLayout>
 
-                <EditText
-                    android:id="@+id/etEmail"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:background="@drawable/input_background"
-                    android:inputType="textEmailAddress"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:textColor="@color/black"
-                    android:layout_marginBottom="16dp" />
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Password"
-                    android:textColor="@color/cream"
-                    android:textStyle="bold"
-                    android:textSize="14sp"
-                    android:layout_marginBottom="4dp" />
-
-                <EditText
-                    android:id="@+id/etPassword"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:background="@drawable/input_background"
-                    android:inputType="textPassword"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:textColor="@color/black"
-                    android:layout_marginBottom="8dp" />
-
-                <TextView
-                    android:id="@+id/tvError"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textColor="#FFCCCC"
-                    android:textSize="13sp"
-                    android:gravity="center"
-                    android:visibility="gone"
-                    android:layout_marginBottom="8dp" />
-
-                <Button
-                    android:id="@+id/btnLogin"
-                    android:layout_width="180dp"
-                    android:layout_height="48dp"
-                    android:layout_gravity="center"
-                    android:background="@drawable/button_background"
-                    android:text="login"
-                    android:textColor="@color/cream"
-                    android:textSize="16sp"
-                    android:fontFamily="serif"
-                    android:layout_marginTop="16dp" />
-
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- Register link with underline -->
+        <!-- Register link -->
         <TextView
             android:id="@+id/tvRegisterLink"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Still don't have an account? Register here"
             android:textColor="#8B6B4A"
             android:textSize="13sp"
-            android:gravity="center"
-            android:layout_marginTop="20dp"
-            android:paddingBottom="24dp" />
+            android:layout_marginTop="16dp"
+            android:clickable="true"
+            android:focusable="true"/>
 
     </LinearLayout>
 </ScrollView>

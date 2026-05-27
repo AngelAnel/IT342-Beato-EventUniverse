@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/cream"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:gravity="center_horizontal">
+
+        <!-- Logo -->
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:src="@drawable/logonobg"
+            android:contentDescription="Logo"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="EVENT\nUNIVERSE"
+            android:textSize="40sp"
+            android:textStyle="bold"
+            android:textColor="@color/dark_maroon"
+            android:gravity="center"
+            android:letterSpacing="0.1"
+            android:lineSpacingMultiplier="1.0"
+            android:fontFamily="serif"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Tagline -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="A wildcat experience"
+            android:textSize="15sp"
+            android:textColor="#8B6B4A"
+            android:fontFamily="serif"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Description -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Event Universe is a web-based and mobile-based platform that streamlines event management for both organizers and participants. Organizers can create and manage events, while participants can easily browse, register, and track events in one centralized system."
+            android:textSize="13sp"
+            android:textColor="@color/dark_maroon"
+            android:fontFamily="serif"
+            android:gravity="center"
+            android:lineSpacingMultiplier="1.5"
+            android:layout_marginBottom="32dp"/>
+
+        <!-- Login Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:padding="28dp"
+            android:gravity="center_horizontal"
+            android:layout_marginBottom="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Login"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@color/cream"
+                android:fontFamily="serif"
+                android:layout_marginBottom="20dp"/>
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnLoginParticipant"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Login as Participant"
+                android:textColor="#8F7B58"
+                android:textStyle="bold"
+                android:fontFamily="serif"
+                android:background="@drawable/cream_button_background"
+                android:layout_marginBottom="12dp"/>
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnLoginOrganizer"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Login as Organizer"
+                android:textColor="#8F7B58"
+                android:textStyle="bold"
+                android:fontFamily="serif"
+                android:background="@drawable/cream_button_background"/>
+
+        </LinearLayout>
+
+        <!-- Register Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:padding="28dp"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Register"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@color/cream"
+                android:fontFamily="serif"
+                android:layout_marginBottom="20dp"/>
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnRegisterParticipant"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Register as Participant"
+                android:textColor="#8F7B58"
+                android:textStyle="bold"
+                android:fontFamily="serif"
+                android:background="@drawable/cream_button_background"
+                android:layout_marginBottom="12dp"/>
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btnRegisterOrganizer"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Register as Organizer"
+                android:textColor="#8F7B58"
+                android:textStyle="bold"
+                android:fontFamily="serif"
+                android:background="@drawable/cream_button_background"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>
