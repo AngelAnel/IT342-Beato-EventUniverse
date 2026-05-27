@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/card_background"
+    android:padding="16dp"
+    android:layout_marginBottom="12dp">
+
+    <!-- Title + Time Row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="4dp">
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Event Title"
+            android:textColor="@color/dark_maroon"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:fontFamily="serif"/>
+
+        <TextView
+            android:id="@+id/tvTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="3 minutes ago"
+            android:textColor="#aaaaaa"
+            android:textSize="11sp"
+            android:fontFamily="serif"/>
+
+    </LinearLayout>
+
+    <!-- Message -->
+    <TextView
+        android:id="@+id/tvMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Angel Beato registered for your event"
+        android:textColor="#555555"
+        android:textSize="13sp"
+        android:fontFamily="serif"/>
+
+    <!-- Unread indicator -->
+    <View
+        android:id="@+id/viewUnread"
+        android:layout_width="8dp"
+        android:layout_height="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/badge_background"
+        android:visibility="gone"/>
+
+</LinearLayout>
