@@ -31,7 +31,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="3 minutes ago"
-            android:textColor="#aaaaaa"
+            android:textColor="#FEF9E1"
             android:textSize="11sp"
             android:fontFamily="serif"/>
 
@@ -43,7 +43,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Angel Beato registered for your event"
-        android:textColor="#555555"
+        android:textColor="#FEF9E1"
         android:textSize="13sp"
         android:fontFamily="serif"/>
 
