@@ -12,17 +12,28 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.EventUniverse">
 
-        <activity
-            android:name=".feature.auth.LoginActivity"
+        <activity android:name=".feature.auth.LandingActivity"
             android:exported="true">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
 
-        <activity android:name=".feature.auth.RegisterActivity" />
-        <activity android:name=".feature.home.HomeActivity" />
+
+        <activity android:name=".feature.auth.LoginActivity"
+            android:exported="false"/>
+
+        <activity android:name=".feature.auth.RegisterActivity"
+            android:exported="false"/>
+
+        <activity android:name=".feature.home.HomeActivity"
+            android:exported="false"/>
+
+        <activity android:name=".feature.profile.ProfileActivity"
+            android:exported="false"/>
+
+        <activity android:name=".feature.notification.NotificationActivity"/>
 
     </application>
 </manifest>
